@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <!-- PWA: installable app (Add to Home Screen) -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#0A0A0C">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="BudgetIQ">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="icon" href="img/logo.png" type="image/png">
+  <title>BudgetIQ</title>
+  <!-- Tailwind CSS CDN -->
+  <link rel="stylesheet" href="css/tailwind.min.css?v=1">
+  <link rel="preload" href="fonts/material-icons.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/style.css?v=4">
+  <script defer src="js/budgetiq-core.js?v=59"></script>
+</head>
+
+<body class="bg-[#0A0A0C] min-h-screen flex items-center justify-center relative">
+  <!-- Pure Mobile View Container -->
+  <div
+    class="w-full max-w-md min-h-screen bg-[#0A0A0C] text-white flex flex-col justify-between relative pb-24 select-none shadow-2xl overflow-hidden">
+    <!-- Ambient Soft Glow Background spots -->
+    <div class="absolute top-0 left-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-[90px] pointer-events-none"></div>
+    <div class="absolute bottom-20 right-0 w-64 h-64 bg-[#C1FF72]/15 rounded-full blur-[90px] pointer-events-none">
+    </div>
+    <!-- 1. Header (Hamburger Menu & Notifications) -->
+    <div class="ps-6 pt-6 pe-6 flex justify-between items-center z-20 backdrop-blur-md">
+      <!-- Exact Hamburger Menu Icon with Outer Glow -->
+      <button id="hamburgerBtn"
+        class="w-11 h-11 rounded-2xl bg-white/[0.03] border border-white/[0.08] flex items-center justify-center text-gray-400 hover:text-[#C1FF72] hover:border-[#C1FF72]/40 transition-all duration-300 active:scale-95 shadow-md">
+        <span class="material-icons text-xl">menu</span>
+      </button>
+      <!-- Brand Logo -->
+      <div class="flex items-center gap-1.5">
+        <img src="img/budgetiq-logo.png" alt="BudgetIQ logo" class="w-6 h-6 rounded-md object-contain">
+        <span class="text-xs font-black tracking-widest text-white">BudgetIQ.</span>
+      </div>
+      <!-- Profile Badge Shortcut -->
+      <div id="profileHeaderAvatar"
+        class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#C1FF72]/10 to-emerald-500/10 border border-[#C1FF72]/20 flex items-center justify-center text-[#C1FF72] font-black text-sm">
+        A
+      </div>
+    </div>
+    <!-- Scrollable Content Area -->
+    <div class="flex-grow overflow-y-auto no-scrollbar p-6 space-y-6 z-10">
+      <!-- 1. Profile Header Card -->
+      <div class="bg-zinc-900/60 border border-zinc-800 rounded-[28px] p-5 flex items-center justify-between shadow-lg">
+        <div class="flex items-center gap-4">
+          <!-- Custom Aesthetic Avatar -->
+          <div id="avatarBadge"
+            class="w-14 h-14 bg-gradient-to-tr from-[#C1FF72] to-emerald-500 text-black text-xl font-black rounded-full flex items-center justify-center shadow-md uppercase">
+            A
+          </div>
+          <div>
+            <h2 id="userName" class="text-base font-extrabold text-white flex items-center gap-1.5">
+              <span id="profileUserNameText">Admin</span><span class="text-[#C1FF72] text-xs">⚡</span>
+            </h2>
+            <p id="userRole" class="text-[10px] text-gray-500 font-semibold mt-0.5">BudgetIQ Workspace • Full access</p>
+          </div>
+        </div>
+        <!-- Edit Profile Button -->
+        <button onclick="openEditProfileSheet()"
+          class="w-9 h-9 rounded-full bg-zinc-950 border border-zinc-800 flex items-center justify-center hover:border-[#C1FF72] transition-all">
+          <span class="material-icons text-gray-400 text-sm hover:text-[#C1FF72]">edit</span>
+        </button>
+      </div>
+      <!-- 2. Current Fund Access -->
+      <div class="space-y-3">
+        <h3 class="text-xs font-extrabold uppercase tracking-widest text-gray-400">my fund</h3>
+        <div class="bg-[#18181B]/50 border border-zinc-800 p-4 rounded-2xl flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <span class="material-icons text-[#C1FF72] text-2xl">account_balance_wallet</span>
+            <div>
+              <h4 id="profileFundMonth" class="text-xs font-bold text-white">July 2026 Shared Fund</h4>
+              <p id="profileFundSummary" class="text-[9px] text-gray-500 font-medium">10 members • Admin access</p>
+            </div>
+          </div>
+          <!-- Manage Fund button -->
+          <button onclick="window.location.href='./plan.html'"
+            class="bg-zinc-900 border border-zinc-800 hover:border-zinc-700/80 text-[10px] font-extrabold px-3.5 py-2 rounded-xl uppercase tracking-wider transition-all">
+            Manage
+          </button>
+        </div>
+      </div>
+      <!-- 3. iPhone Data Safety -->
+      <div class="space-y-3">
+        <div class="flex items-center justify-between">
+          <h3 class="text-xs font-extrabold uppercase tracking-widest text-gray-400">data safety</h3>
+          <span class="flex items-center gap-1 text-[8px] font-black uppercase tracking-wider text-[#C1FF72]">
+            <span class="material-icons text-[12px]">verified_user</span> iPhone backup
+          </span>
+        </div>
+        <div class="rounded-2xl border border-zinc-800 bg-[#18181B]/50 p-4">
+          <div class="flex items-start gap-3">
+            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#C1FF72]/20 bg-[#C1FF72]/10 text-[#C1FF72]">
+              <span class="material-icons text-lg">cloud_download</span>
+            </span>
+            <div class="min-w-0 flex-1">
+              <h4 class="text-xs font-extrabold text-white">Complete BudgetIQ backup</h4>
+              <p class="mt-1 text-[9px] font-semibold leading-relaxed text-zinc-500">Includes members, monthly payments, expenses, receipts, profile settings and passwords.</p>
+              <p id="backupStatusLabel" class="mt-2 text-[8px] font-bold text-zinc-600">No backup exported yet</p>
+            </div>
+          </div>
+          <div class="mt-4 grid grid-cols-2 gap-2">
+            <button type="button" onclick="downloadBudgetIQBackup()"
+              class="flex items-center justify-center gap-1.5 rounded-xl bg-[#C1FF72] px-3 py-3 text-[9px] font-black uppercase tracking-wider text-black active:scale-[0.98]">
+              <span class="material-icons text-sm">download</span> Export backup
+            </button>
+            <button type="button" onclick="openBudgetIQRestorePicker()"
+              class="flex items-center justify-center gap-1.5 rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-3 text-[9px] font-black uppercase tracking-wider text-white active:scale-[0.98]">
+              <span class="material-icons text-sm text-purple-400">restore</span> Restore
+            </button>
+          </div>
+          <input id="budgetIQRestoreInput" type="file" accept="application/json,.json" class="hidden" onchange="restoreBudgetIQBackup(event)">
+        </div>
+      </div>
+    </div>
+    <!-- 5. Sticky Bottom Navigation Bar -->
+    <div
+      class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-[#0D0E12]/90 border-t border-zinc-800/80 backdrop-blur-md px-6 py-3 flex justify-between items-center z-40 rounded-t-3xl">
+      <!-- Home -->
+      <a href="./dashboard.html" class="flex flex-col items-center gap-1 text-gray-500 hover:text-white transition-all">
+        <span class="material-icons text-xl">home</span>
+        <span class="text-[9px] font-bold uppercase tracking-wider">Home</span>
+      </a>
+      <!-- Members -->
+      <a href="./plan.html" class="flex flex-col items-center gap-1 text-gray-500 hover:text-white transition-all">
+        <span class="material-icons text-xl">groups</span>
+        <span class="text-[9px] font-bold uppercase tracking-wider">Members</span>
+      </a>
+      <!-- Cart -->
+      <a href="./cart.html"
+        class="flex flex-col items-center gap-1 text-gray-500 hover:text-white transition-all relative">
+        <span class="material-icons text-xl">receipt_long</span>
+        <span class="text-[9px] font-bold uppercase tracking-wider">Add Expense</span>
+      </a>
+      <!-- Profile -->
+      <a href="./profile.html" class="flex flex-col items-center gap-1 text-[#C1FF72] hover:text-white transition-all">
+        <span class="material-icons text-xl">person</span>
+        <span class="text-[9px] font-bold uppercase tracking-wider">Profile</span>
+      </a>
+    </div>
+    <!-- Floating Micro-Notification Toast -->
+    <div id="profileToast"
+      class="fixed bottom-24 left-1/2 -translate-x-1/2 bg-zinc-950 border border-zinc-800 text-[#C1FF72] text-[11px] font-extrabold px-5 py-3.5 rounded-full shadow-2xl flex items-center gap-2 whitespace-nowrap opacity-0 pointer-events-none translate-y-3 transition-all duration-300 z-50">
+      <span class="material-icons text-sm">check_circle</span>
+      <span id="toastMessage">Done!</span>
+    </div>
+    <!-- 6. DYNAMIC OVERLAY SHEETS -->
+    <!-- Sliding Edit Profile Bottom Sheet -->
+    <div id="editProfileSheet"
+      class="fixed inset-0 bg-black/60 z-50 flex items-end justify-center hidden opacity-0 transition-all duration-300">
+      <div
+        class="w-full max-w-md bg-[#121216] rounded-t-[32px] p-6 space-y-4 border-t border-zinc-800 translate-y-full transition-transform duration-300">
+        <div class="flex justify-between items-center pb-2">
+          <h3 class="text-sm font-extrabold uppercase tracking-wider text-gray-400">Edit Profile Info</h3>
+          <button onclick="closeEditProfileSheet()"
+            class="w-8 h-8 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center">
+            <span class="material-icons text-sm text-gray-400">close</span>
+          </button>
+        </div>
+        <!-- Inputs fields -->
+        <div class="space-y-3">
+          <div class="space-y-1">
+            <label class="text-[10px] text-gray-500 font-bold uppercase tracking-wider px-1">Full Name</label>
+            <input id="inputName" type="text" value="Admin"
+              class="w-full bg-zinc-950 border border-zinc-800 rounded-xl py-3 px-4 text-xs font-semibold focus:border-[#C1FF72] outline-none" />
+          </div>
+          <div class="space-y-1">
+            <label class="text-[10px] text-gray-500 font-bold uppercase tracking-wider px-1">Profile Subtitle</label>
+            <input id="inputRole" type="text" value="BudgetIQ Workspace • Full access"
+              class="w-full bg-zinc-950 border border-zinc-800 rounded-xl py-3 px-4 text-xs font-semibold focus:border-[#C1FF72] outline-none" />
+          </div>
+        </div>
+        <button onclick="saveProfileChanges()"
+          class="w-full bg-[#C1FF72] text-black font-extrabold py-3.5 rounded-xl text-xs uppercase tracking-wider transition-all mt-2">
+          Save Changes
+        </button>
+      </div>
+    </div>
+  </div>
+  <!-- 3. INTERACTIVE SLIDEOUT SIDEBAR DRAWER (Glassmorphism & Search) -->
+  <!-- Overlay backdrop -->
+  <div id="sidebarBackdrop" class="absolute inset-0 bg-black/80 z-40 hidden opacity-0 transition-opacity duration-300">
+  </div>
+  <!-- Redesigned Premium Sidebar Panel -->
+  <div id="sidebarMenu"
+    class="absolute inset-y-0 left-0 w-80 bg-[#090A0E]/95 border-r border-white/[0.06] backdrop-blur-2xl z-50 transform -translate-x-full transition-transform duration-500 ease-out flex flex-col justify-between p-6 overflow-y-auto no-scrollbar">
+    <div class="space-y-5">
+      <!-- Sidebar Profile & Close Header -->
+      <div class="flex justify-between items-center pb-4 border-b border-white/[0.04]">
+        <div class="flex items-center gap-3">
+          <div id="budgetIQSidebarAvatar"
+            class="w-10 h-10 bg-[#C1FF72] text-black text-sm font-black rounded-full flex items-center justify-center">
+            A
+          </div>
+          <div>
+            <h4 id="budgetIQSidebarUser" class="text-xs font-extrabold text-white">Admin ⚡</h4>
+            <p class="text-[9px] text-gray-500 font-semibold">BudgetIQ Workspace</p>
+          </div>
+        </div>
+        <!-- Styled Close Button -->
+        <button id="closeSidebarBtn"
+          class="w-8 h-8 rounded-full bg-white/[0.03] border border-white/[0.08] flex items-center justify-center text-gray-400 hover:text-white transition-all">
+          <span class="material-icons text-sm">close</span>
+        </button>
+      </div>
+      <!-- NEW: Live Screen Search Box (UX upgrade) -->
+      <div
+        class="flex bg-white/[0.03] border border-white/[0.06] focus-within:border-[#C1FF72]/40 rounded-xl p-1 transition-all">
+        <span class="material-icons text-gray-500 text-sm px-2 flex items-center">search</span>
+        <input id="screenSearch" onkeyup="searchScreens()" type="text" placeholder="Search"
+          class="bg-transparent w-full outline-none py-2 text-[10px] font-bold uppercase tracking-wider placeholder-gray-600 text-white" />
+      </div>
+      <!-- CATEGORIZED DIRECTORY -->
+      <div id="linksContainer" class="space-y-5 overflow-y-auto no-scrollbar pr-1 max-h-[440px]">
+        <!-- Category 2: User Core App -->
+        <div class="category-sec space-y-2">
+          <h4 class="text-[8px] font-black uppercase tracking-widest text-[#C1FF72]">User Core App</h4>
+          <div class="space-y-1 text-xs">
+            <a href="./dashboard.html"
+              class="nav-link-item flex items-center justify-between py-2 px-3 text-gray-400 hover:text-[#C1FF72] rounded-xl hover:bg-white/[0.03] transition-all font-semibold group">
+              <span class="flex items-center gap-2 group-hover:translate-x-1.5 transition-transform"><span
+                  class="material-icons text-sm text-gray-500 group-hover:text-[#C1FF72]">home</span> Home
+                Dashboard</span>
+            </a>
+          </div>
+        </div>
+        <!-- Category 4: Profile and history -->
+        <div class="category-sec space-y-2">
+          <h4 class="text-[8px] font-black uppercase tracking-widest text-purple-400">Profile &amp; History</h4>
+          <div class="space-y-1 text-xs">
+            <a href="./profile.html"
+              class="nav-link-item flex items-center justify-between py-2 px-3 text-gray-400 hover:text-[#C1FF72] rounded-xl hover:bg-white/[0.03] transition-all font-semibold group">
+              <span class="flex items-center gap-2 group-hover:translate-x-1.5 transition-transform"><span
+                  class="material-icons text-sm text-gray-500 group-hover:text-[#C1FF72]">person</span> Profile</span>
+            </a>
+            <a href="./history.html"
+              class="nav-link-item flex items-center justify-between py-2 px-3 text-gray-400 hover:text-[#C1FF72] rounded-xl hover:bg-white/[0.03] transition-all font-semibold group">
+              <span class="flex items-center gap-2 group-hover:translate-x-1.5 transition-transform"><span
+                  class="material-icons text-sm text-gray-500 group-hover:text-[#C1FF72]">history</span> History</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Sidebar Footer -->
+    <div
+      class="pt-4 border-t border-white/[0.04] flex items-center justify-between text-[10px] text-gray-500 font-semibold uppercase tracking-wider">
+      <span id="budgetIQSidebarFooterUser">Admin</span>
+      <span>v1.0.7 ⚡</span>
+    </div>
+  </div>
+</body>
+
+</html>

@@ -1,0 +1,157 @@
+/*
+Template Name: Tiffinbox - Tiffin and Food Delivery Mobile Template
+Author: Askbootstrap
+Author URI: https://themeforest.net/user/askbootstrap
+Version: 0.1
+*/
+
+/*
+- Body
+- Scrollbar Design 
+*/
+
+/* Body */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+html {
+  touch-action: manipulation;
+}
+@font-face {
+  font-family: 'Material Icons';
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url('../fonts/material-icons.woff2') format('woff2');
+}
+.material-icons {
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  text-rendering: optimizeLegibility;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+.osahan-body {
+    margin-top: auto !important;
+    margin-bottom: auto !important;
+    height: 100vh !important;
+    overflow: auto;
+}
+.osahan-main {
+    height: 100vh !important;
+    padding: 0px !important;
+}
+.osahan-header {
+    margin-bottom: auto !important;
+}
+.osahan-footer {
+    margin-top: auto !important;
+    transform: unset !important;
+    position: unset !important;
+}
+div#sidebarMenu {
+    height: 100vh;
+}
+.tscooter{
+  animation-duration: 2s;
+}
+
+/* Scrollbar Design */
+body::-webkit-scrollbar,
+::-webkit-scrollbar {
+  width: 2px; 
+  height: 2px; 
+}
+body::-webkit-scrollbar-track,
+::-webkit-scrollbar-track {
+  background: #000;
+}
+body::-webkit-scrollbar-thumb,
+::-webkit-scrollbar-thumb {
+  background-color: #333;
+  border-radius: 3px;
+}
+/* End Scrollbar Design */
+
+/* History keeps its controls visible while only the activity cards scroll. */
+.history-activity-scroll {
+  height: clamp(280px, 48vh, 440px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  scrollbar-width: thin;
+  scrollbar-color: #C1FF72 #18181b;
+  scrollbar-gutter: stable;
+}
+.history-activity-scroll::-webkit-scrollbar {
+  display: block;
+  width: 4px;
+}
+.history-activity-scroll::-webkit-scrollbar-track {
+  background: #18181b;
+  border-radius: 999px;
+}
+.history-activity-scroll::-webkit-scrollbar-thumb {
+  background: #C1FF72;
+  border-radius: 999px;
+}
+
+/* ============================================================
+   PWA / iOS installable-app fixes
+   (added to make the template work cleanly as a Home-Screen app)
+   ============================================================ */
+
+/* 1. Dynamic viewport height: stops content being clipped behind
+      Safari's address/tool bar. Falls back to the original 100vh
+      on browsers that don't support dvh. */
+@supports (height: 100dvh) {
+  .min-h-screen { min-height: 100dvh !important; }
+  .h-screen     { height: 100dvh !important; }
+}
+
+/* 2. Keep the fixed bottom navigation above the iPhone home
+      indicator. env() resolves to 0 on devices without a safe
+      area, so this is harmless on desktop / older phones. */
+.fixed.bottom-0 {
+  padding-bottom: calc(0.75rem + env(safe-area-inset-bottom)) !important;
+}
+
+/* 3. When launched from the Home Screen (standalone, full screen),
+      drop the app card below the notch / status bar. box-sizing is
+      border-box (Tailwind default), so this padding does not create
+      extra scroll height. */
+@media all and (display-mode: standalone) {
+  .max-w-md.min-h-screen {
+    padding-top: env(safe-area-inset-top);
+  }
+}
+
+/* 4. iPhone Safari zooms the whole page when a focused form field is
+      rendered below 16px. Keep editable controls at the safe size on
+      phones so edit/add popups stay at the user's current zoom level. */
+@media screen and (max-width: 768px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+  select,
+  textarea,
+  [contenteditable="true"] {
+    font-size: 16px !important;
+  }
+}

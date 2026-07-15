@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#0A0A0C">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="BudgetIQ">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="icon" href="img/logo.png" type="image/png">
+  <title>BudgetIQ History</title>
+  <link rel="stylesheet" href="css/tailwind.min.css?v=1">
+  <link rel="preload" href="fonts/material-icons.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/style.css?v=4">
+  <script defer src="js/budgetiq-core.js?v=59"></script>
+</head>
+
+<body class="bg-[#0A0A0C] min-h-screen flex items-center justify-center relative">
+  <div
+    class="w-full max-w-md min-h-screen bg-[#0A0A0C] text-white flex flex-col justify-between relative pb-24 select-none shadow-2xl overflow-hidden">
+    <div class="absolute top-0 left-0 w-64 h-64 bg-purple-500/10 rounded-full blur-[90px] pointer-events-none"></div>
+    <div class="absolute bottom-20 right-0 w-64 h-64 bg-[#C1FF72]/15 rounded-full blur-[90px] pointer-events-none"></div>
+
+    <div class="ps-6 pt-6 pe-6 flex justify-between items-center z-20 backdrop-blur-md">
+      <button id="hamburgerBtn"
+        class="w-11 h-11 rounded-2xl bg-white/[0.03] border border-white/[0.08] flex items-center justify-center text-gray-400 hover:text-[#C1FF72] hover:border-[#C1FF72]/40 transition-all duration-300 active:scale-95 shadow-md">
+        <span class="material-icons text-xl">menu</span>
+      </button>
+      <div class="flex items-center gap-1.5">
+        <img src="img/budgetiq-logo.png" alt="BudgetIQ logo" class="w-6 h-6 rounded-md object-contain">
+        <span class="text-xs font-black tracking-widest text-white">BudgetIQ.</span>
+      </div>
+      <div id="profileHeaderAvatar"
+        class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#C1FF72]/10 to-emerald-500/10 border border-[#C1FF72]/20 flex items-center justify-center text-[#C1FF72] font-black text-sm">
+        A
+      </div>
+    </div>
+
+    <div class="flex-grow overflow-y-auto no-scrollbar p-6 space-y-6 z-10">
+      <div class="flex items-end justify-between">
+        <div>
+          <p class="text-[9px] font-black uppercase tracking-[0.2em] text-[#C1FF72]">Shared fund</p>
+          <h1 class="mt-1 text-2xl font-extrabold tracking-tight text-white">History</h1>
+        </div>
+        <span class="flex h-11 w-11 items-center justify-center rounded-2xl border border-purple-500/20 bg-purple-500/10 text-purple-400">
+          <span class="material-icons text-xl">history</span>
+        </span>
+      </div>
+
+      <div class="rounded-[24px] border border-zinc-800 bg-zinc-900/60 p-4">
+        <div class="flex items-center gap-3">
+          <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#C1FF72]/20 bg-[#C1FF72]/10 text-[#C1FF72]">
+            <span class="material-icons text-lg">account_balance_wallet</span>
+          </span>
+          <div class="min-w-0">
+            <h2 id="profileFundMonth" class="truncate text-xs font-extrabold text-white">July 2026 Shared Fund</h2>
+            <p id="profileFundSummary" class="mt-0.5 text-[9px] font-semibold text-zinc-500">10 members • Admin access</p>
+          </div>
+        </div>
+      </div>
+
+      <button type="button" onclick="exportBudgetIQMonthlyHistoryPDF()"
+        class="group flex w-full items-center gap-3 rounded-[24px] border border-dashed border-[#C1FF72]/25 bg-[#C1FF72]/[0.04] p-4 text-left transition-all hover:border-[#C1FF72]/50 hover:bg-[#C1FF72]/[0.07] active:scale-[0.99]">
+        <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-red-500/20 bg-red-500/10 text-red-400">
+          <span class="material-icons text-xl">picture_as_pdf</span>
+        </span>
+        <span class="min-w-0 flex-1">
+          <span id="historyPdfButtonLabel" class="block truncate text-xs font-extrabold uppercase tracking-wide text-white">View July PDF</span>
+          <span id="historyPdfButtonSummary" class="mt-0.5 block truncate text-[9px] font-semibold text-zinc-500">0 activities • 0 receipts</span>
+        </span>
+        <span class="material-icons text-sm text-zinc-600 transition-transform group-hover:translate-x-1 group-hover:text-[#C1FF72]">chevron_right</span>
+      </button>
+
+      <div class="space-y-4">
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xs font-extrabold uppercase tracking-widest text-gray-400">activity history</h3>
+            <div class="flex items-center gap-1.5">
+              <span class="mr-1 text-[8px] font-extrabold uppercase tracking-wider text-zinc-600">Newest first</span>
+              <button type="button" onclick="scrollBudgetIQActivity(-1)" aria-label="Scroll activity history up"
+                class="flex h-7 w-7 items-center justify-center rounded-lg border border-white/[0.07] bg-white/[0.035] text-zinc-400 transition-all active:scale-90">
+                <span class="material-icons text-sm">arrow_upward</span>
+              </button>
+              <button type="button" onclick="scrollBudgetIQActivity(1)" aria-label="Scroll activity history down"
+                class="flex h-7 w-7 items-center justify-center rounded-lg border border-[#C1FF72]/20 bg-[#C1FF72]/10 text-[#C1FF72] transition-all active:scale-90">
+                <span class="material-icons text-sm">arrow_downward</span>
+              </button>
+            </div>
+          </div>
+          <div class="grid grid-cols-3 gap-1 rounded-xl border border-zinc-800 bg-[#18181B] p-1">
+            <button onclick="filterOrders('all', this)"
+              class="filter-btn bg-[#C1FF72] text-black text-[9px] font-black px-3.5 py-1.5 rounded-lg uppercase transition-all shadow-md">All</button>
+            <button onclick="filterOrders('contribution', this)"
+              class="filter-btn text-gray-400 text-[9px] font-extrabold px-3.5 py-1.5 rounded-lg uppercase hover:text-white transition-all">Contributions</button>
+            <button onclick="filterOrders('expense', this)"
+              class="filter-btn text-gray-400 text-[9px] font-extrabold px-3.5 py-1.5 rounded-lg uppercase hover:text-white transition-all">Expenses</button>
+          </div>
+        </div>
+        <div id="profileActivityList"
+          class="history-activity-scroll space-y-3 rounded-2xl border border-white/[0.05] bg-black/10 p-2"></div>
+      </div>
+    </div>
+
+    <div
+      class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-[#0D0E12]/90 border-t border-zinc-800/80 backdrop-blur-md px-6 py-3 flex justify-between items-center z-40 rounded-t-3xl">
+      <a href="./dashboard.html" class="flex flex-col items-center gap-1 text-gray-500 hover:text-white transition-all">
+        <span class="material-icons text-xl">home</span>
+        <span class="text-[9px] font-bold uppercase tracking-wider">Home</span>
+      </a>
+      <a href="./plan.html" class="flex flex-col items-center gap-1 text-gray-500 hover:text-white transition-all">
+        <span class="material-icons text-xl">groups</span>
+        <span class="text-[9px] font-bold uppercase tracking-wider">Members</span>
+      </a>
+      <a href="./cart.html" class="flex flex-col items-center gap-1 text-gray-500 hover:text-white transition-all relative">
+        <span class="material-icons text-xl">receipt_long</span>
+        <span class="text-[9px] font-bold uppercase tracking-wider">Add Expense</span>
+      </a>
+      <a href="./profile.html" class="flex flex-col items-center gap-1 text-[#C1FF72] hover:text-white transition-all">
+        <span class="material-icons text-xl">person</span>
+        <span class="text-[9px] font-bold uppercase tracking-wider">Profile</span>
+      </a>
+    </div>
+
+    <div id="orderDetailModal"
+      class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-6 hidden opacity-0 transition-opacity duration-300">
+      <div
+        class="w-full max-w-sm bg-gradient-to-b from-zinc-800 to-black border border-zinc-800 rounded-[32px] p-6 space-y-4 shadow-2xl relative scale-95 transition-transform duration-300">
+        <button onclick="closeOrderDetailModal()"
+          class="absolute top-4 right-4 w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center">
+          <span class="material-icons text-sm text-gray-400">close</span>
+        </button>
+        <div class="pt-2 text-center">
+          <span id="modalActivityIcon" class="material-icons text-[#C1FF72] text-4xl">receipt_long</span>
+          <h3 id="modalTitle" class="text-sm font-extrabold text-white mt-1">Activity Details</h3>
+          <p id="modalMeta" class="text-[10px] text-gray-500 font-medium">July 2026 • Expense</p>
+        </div>
+        <div class="bg-zinc-950 border border-zinc-800 p-4 rounded-2xl space-y-2 text-xs">
+          <div class="flex justify-between"><span class="text-gray-500">Amount</span><span id="modalPrice" class="text-white font-bold">AED 0</span></div>
+          <div class="flex justify-between gap-4"><span id="modalPersonLabel" class="text-gray-500">Purchased By</span><span id="modalPerson" class="truncate text-right text-white font-bold">Admin</span></div>
+          <div class="flex justify-between gap-4"><span id="modalDetailLabel" class="text-gray-500">Category</span><span id="modalDetail" class="truncate text-right text-white font-bold">Other</span></div>
+          <div class="flex justify-between gap-4"><span class="text-gray-500">Reference</span><span id="modalReference" class="text-right text-white font-bold tracking-wide">BIQ-0000</span></div>
+          <div class="flex justify-between"><span class="text-gray-500">Activity Status</span><span id="modalStatus" class="text-[#C1FF72] font-black uppercase tracking-wider">Recorded</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="sidebarBackdrop" class="absolute inset-0 bg-black/80 z-40 hidden opacity-0 transition-opacity duration-300"></div>
+  <div id="sidebarMenu"
+    class="absolute inset-y-0 left-0 w-80 bg-[#090A0E]/95 border-r border-white/[0.06] backdrop-blur-2xl z-50 transform -translate-x-full transition-transform duration-500 ease-out flex flex-col justify-between p-6 overflow-y-auto no-scrollbar">
+    <div class="space-y-5">
+      <div class="flex justify-between items-center pb-4 border-b border-white/[0.04]">
+        <div class="flex items-center gap-3">
+          <div id="budgetIQSidebarAvatar" class="w-10 h-10 bg-[#C1FF72] text-black text-sm font-black rounded-full flex items-center justify-center">A</div>
+          <div>
+            <h4 id="budgetIQSidebarUser" class="text-xs font-extrabold text-white">Admin ⚡</h4>
+            <p class="text-[9px] text-gray-500 font-semibold">BudgetIQ Workspace</p>
+          </div>
+        </div>
+        <button id="closeSidebarBtn" class="w-8 h-8 rounded-full bg-white/[0.03] border border-white/[0.08] flex items-center justify-center text-gray-400 hover:text-white transition-all">
+          <span class="material-icons text-sm">close</span>
+        </button>
+      </div>
+      <div class="flex bg-white/[0.03] border border-white/[0.06] focus-within:border-[#C1FF72]/40 rounded-xl p-1 transition-all">
+        <span class="material-icons text-gray-500 text-sm px-2 flex items-center">search</span>
+        <input id="screenSearch" onkeyup="searchScreens()" type="text" placeholder="Search" class="bg-transparent w-full outline-none py-2 text-[10px] font-bold uppercase tracking-wider placeholder-gray-600 text-white">
+      </div>
+      <div id="linksContainer" class="space-y-5 overflow-y-auto no-scrollbar pr-1 max-h-[440px]">
+        <div class="category-sec space-y-2">
+          <h4 class="text-[8px] font-black uppercase tracking-widest text-[#C1FF72]">User Core App</h4>
+          <div class="space-y-1 text-xs">
+            <a href="./dashboard.html" class="nav-link-item flex items-center justify-between py-2 px-3 text-gray-400 hover:text-[#C1FF72] rounded-xl hover:bg-white/[0.03] transition-all font-semibold group">
+              <span class="flex items-center gap-2 group-hover:translate-x-1.5 transition-transform"><span class="material-icons text-sm text-gray-500 group-hover:text-[#C1FF72]">home</span> Home Dashboard</span>
+            </a>
+          </div>
+        </div>
+        <div class="category-sec space-y-2">
+          <h4 class="text-[8px] font-black uppercase tracking-widest text-purple-400">Profile &amp; History</h4>
+          <div class="space-y-1 text-xs">
+            <a href="./profile.html" class="nav-link-item flex items-center justify-between py-2 px-3 text-gray-400 hover:text-[#C1FF72] rounded-xl hover:bg-white/[0.03] transition-all font-semibold group">
+              <span class="flex items-center gap-2 group-hover:translate-x-1.5 transition-transform"><span class="material-icons text-sm text-gray-500 group-hover:text-[#C1FF72]">person</span> Profile</span>
+            </a>
+            <a href="./history.html" class="nav-link-item flex items-center justify-between py-2 px-3 text-[#C1FF72] rounded-xl bg-white/[0.03] transition-all font-semibold group">
+              <span class="flex items-center gap-2"><span class="material-icons text-sm text-[#C1FF72]">history</span> History</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pt-4 border-t border-white/[0.04] flex items-center justify-between text-[10px] text-gray-500 font-semibold uppercase tracking-wider">
+      <span id="budgetIQSidebarFooterUser">Admin</span><span>v1.0.7 ⚡</span>
+    </div>
+  </div>
+</body>
+
+</html>

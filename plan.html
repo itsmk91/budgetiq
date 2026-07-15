@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <!-- PWA: installable app (Add to Home Screen) -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#0A0A0C">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="BudgetIQ">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="icon" href="img/logo.png" type="image/png">
+  <title>BudgetIQ</title>
+  <!-- Tailwind CSS CDN -->
+  <link rel="stylesheet" href="css/tailwind.min.css?v=1">
+  <link rel="preload" href="fonts/material-icons.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/style.css?v=4">
+  <script defer src="js/budgetiq-core.js?v=59"></script>
+</head>
+
+<body class="bg-[#0A0A0C] min-h-screen flex items-center justify-center relative">
+  <!-- Pure Mobile View Container -->
+  <div
+    class="w-full max-w-md min-h-screen bg-[#0A0A0C] text-white flex flex-col justify-between relative pb-24 select-none shadow-2xl">
+    <!-- Ambient Soft Glow Background spots -->
+    <div class="absolute top-0 left-0 w-64 h-64 bg-[#C1FF72]/10 rounded-full blur-[90px] pointer-events-none"></div>
+    <div class="absolute bottom-20 right-0 w-64 h-64 bg-orange-500/10 rounded-full blur-[90px] pointer-events-none">
+    </div>
+    <!-- Scrollable Content Area -->
+    <div class="flex-grow overflow-y-auto no-scrollbar p-6 space-y-6 z-10">
+      <!-- 1. Members Header -->
+      <div class="flex justify-between items-center">
+        <div class="flex justify-between items-center gap-3">
+          <button id="hamburgerBtn"
+            class="w-11 h-11 rounded-2xl bg-white/[0.03] border border-white/[0.08] flex items-center justify-center text-gray-400 hover:text-[#C1FF72] hover:border-[#C1FF72]/40 transition-all duration-300 active:scale-95 shadow-md">
+            <span class="material-icons text-xl">menu</span>
+          </button>
+          <div>
+            <h4 class="text-xs font-bold text-gray-500 uppercase tracking-widest">BudgetIQ</h4>
+            <h2 class="text-xl font-extrabold text-white mt-0.5">Members</h2>
+          </div>
+        </div>
+        <button onclick="openAddMemberModal()"
+          class="flex items-center gap-1.5 rounded-full border border-[#C1FF72]/20 bg-[#C1FF72]/10 px-3.5 py-2 text-[9px] font-extrabold uppercase tracking-wider text-[#C1FF72] transition-all active:scale-95">
+          <span class="material-icons text-sm">person_add</span>
+          Add Member
+        </button>
+      </div>
+      <!-- 2. Member Status Summary -->
+      <div class="bg-zinc-900/60 border border-zinc-800 rounded-[28px] p-5 space-y-4">
+        <div class="flex justify-between items-start">
+          <div>
+            <h3 class="text-lg font-extrabold text-white"><span id="memberTotalCount">10</span> Members</h3>
+            <p class="text-[10px] text-gray-500 font-semibold mt-0.5"><span id="memberMonthSummary">July 2026</span> contribution status</p>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <div
+              class="flex h-8 w-8 items-center justify-center rounded-xl border border-[#C1FF72]/20 bg-[#C1FF72]/10 text-[#C1FF72]">
+              <span class="material-icons text-base">groups</span>
+            </div>
+            <button type="button" onclick="openMemberContributionModal()" aria-label="Edit per-member contribution"
+              class="flex h-8 w-8 items-center justify-center rounded-xl border border-[#C1FF72]/20 bg-[#C1FF72]/10 text-[#C1FF72] transition-all active:scale-90">
+              <span class="material-icons text-sm">edit</span>
+            </button>
+          </div>
+        </div>
+        <div class="space-y-1.5">
+          <div class="flex justify-between text-[10px] font-bold uppercase tracking-wider text-gray-400">
+            <span><span id="memberPaidCount" class="text-emerald-400">0</span> Paid</span>
+            <span><span id="memberUnpaidCount" class="text-red-400">10</span> Not Paid</span>
+          </div>
+          <div class="w-full h-2 bg-zinc-950 rounded-full overflow-hidden p-[2px] border border-zinc-800">
+            <div id="memberPaidProgress" class="h-full bg-gradient-to-r from-emerald-500 to-[#C1FF72] rounded-full transition-all duration-300" style="width: 0%"></div>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2 border-t border-white/[0.06] pt-3">
+          <div class="rounded-xl bg-black/20 px-3 py-2.5">
+            <p class="text-[8px] font-black uppercase tracking-wider text-zinc-600">Per member</p>
+            <p id="memberContributionAmount" class="mt-1 text-xs font-black text-white">AED 1,000</p>
+          </div>
+          <div class="rounded-xl bg-[#C1FF72]/[0.06] px-3 py-2.5">
+            <p class="text-[8px] font-black uppercase tracking-wider text-zinc-600">Collected</p>
+            <p id="memberCollectedAmount" class="mt-1 text-xs font-black text-[#C1FF72]">AED 0</p>
+          </div>
+        </div>
+      </div>
+      <!-- 3. Compact Scrollable Members List -->
+      <section class="space-y-4">
+        <div class="flex items-center justify-between">
+          <h3 class="text-xs font-extrabold uppercase tracking-widest text-gray-400">All members</h3>
+          <span id="memberMonthLabel" class="text-[10px] font-bold text-gray-500">July 2026</span>
+        </div>
+
+        <div class="overflow-hidden rounded-[28px] border border-zinc-800 bg-zinc-900/60 shadow-[0_18px_50px_rgba(0,0,0,0.16)]">
+          <div class="border-b border-white/[0.06] p-3">
+            <label
+              class="flex items-center gap-2 rounded-2xl border border-white/[0.07] bg-black/20 px-3 py-2.5 transition-all focus-within:border-[#C1FF72]/30">
+              <span class="material-icons text-base text-zinc-600">search</span>
+              <input id="memberSearchInput" oninput="filterMemberRows()" type="search" placeholder="Search members"
+                class="w-full bg-transparent text-[10px] font-bold text-white outline-none placeholder:text-zinc-600" />
+            </label>
+          </div>
+
+          <div id="memberScrollList" class="h-[360px] overflow-y-auto px-3 no-scrollbar">
+            <div class="member-list-row flex items-center gap-3 border-b border-white/[0.055] py-3" data-member-id="1" data-status="paid">
+              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#C1FF72] text-[10px] font-black text-black">M1</span>
+              <span class="member-name min-w-0 flex-1 truncate text-xs font-extrabold text-white">Member 01</span>
+              <button type="button" onclick="toggleMemberPaid(this)" aria-label="Mark Member 01 paid or not paid" aria-pressed="true"
+                class="member-payment-toggle flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-[#C1FF72]/30 bg-[#C1FF72] text-black transition-all active:scale-90">
+                <span class="material-icons text-base">check</span>
+              </button>
+            </div>
+            <div class="member-list-row flex items-center gap-3 border-b border-white/[0.055] py-3" data-member-id="2" data-status="paid">
+              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-400/10 text-[10px] font-black text-emerald-400">M2</span>
+              <span class="member-name min-w-0 flex-1 truncate text-xs font-extrabold text-white">Member 02</span>
+              <button type="button" onclick="toggleMemberPaid(this)" aria-label="Mark Member 02 paid or not paid" aria-pressed="true" class="member-payment-toggle flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-[#C1FF72]/30 bg-[#C1FF72] text-black transition-all active:scale-90"><span class="material-icons text-base">check</span></button>
+            </div>
+            <div class="member-list-row flex items-center gap-3 border-b border-white/[0.055] py-3" data-member-id="3" data-status="paid">
+              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-sky-500/10 text-[10px] font-black text-sky-400">M3</span>
+              <span class="member-name min-w-0 flex-1 truncate text-xs font-extrabold text-white">Member 03</span>
+              <button type="button" onclick="toggleMemberPaid(this)" aria-label="Mark Member 03 paid or not paid" aria-pressed="true" class="member-payment-toggle flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-[#C1FF72]/30 bg-[#C1FF72] text-black transition-all active:scale-90"><span class="material-icons text-base">check</span></button>
+            </div>
+            <div class="member-list-row flex items-center gap-3 border-b border-white/[0.055] py-3" data-member-id="4" data-status="paid">
+              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-purple-500/10 text-[10px] font-black text-purple-400">M4</span>
+              <span class="member-name min-w-0 flex-1 truncate text-xs font-extrabold text-white">Member 04</span>
+              <button type="button" onclick="toggleMemberPaid(this)" aria-label="Mark Member 04 paid or not paid" aria-pressed="true" class="member-payment-toggle flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-[#C1FF72]/30 bg-[#C1FF72] text-black transition-all active:scale-90"><span class="material-icons text-base">check</span></button>
+            </div>
+            <div class="member-list-row flex items-center gap-3 border-b border-white/[0.055] py-3" data-member-id="5" data-status="paid">
+              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-[10px] font-black text-amber-400">M5</span>
+              <span class="member-name min-w-0 flex-1 truncate text-xs font-extrabold text-white">Member 05</span>
+              <button type="button" onclick="toggleMemberPaid(this)" aria-label="Mark Member 05 paid or not paid" aria-pressed="true" class="member-payment-toggle flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-[#C1FF72]/30 bg-[#C1FF72] text-black transition-all active:scale-90"><span class="material-icons text-base">check</span></button>
+            </div>
+            <div class="member-list-row flex items-center gap-3 border-b border-white/[0.055] py-3" data-member-id="6" data-status="paid">
+              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-pink-500/10 text-[10px] font-black text-pink-400">M6</span>
+              <span class="member-name min-w-0 flex-1 truncate text-xs font-extrabold text-white">Member 06</span>
+              <button type="button" onclick="toggleMemberPaid(this)" aria-label="Mark Member 06 paid or not paid" aria-pressed="true" class="member-payment-toggle flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-[#C1FF72]/30 bg-[#C1FF72] text-black transition-all active:scale-90"><span class="material-icons text-base">check</span></button>
+            </div>
+            <div class="member-list-row flex items-center gap-3 border-b border-white/[0.055] py-3" data-member-id="7" data-status="paid">
+              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-cyan-500/10 text-[10px] font-black text-cyan-400">M7</span>
+              <span class="member-name min-w-0 flex-1 truncate text-xs font-extrabold text-white">Member 07</span>
+              <button type="button" onclick="toggleMemberPaid(this)" aria-label="Mark Member 07 paid or not paid" aria-pressed="true" class="member-payment-toggle flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-[#C1FF72]/30 bg-[#C1FF72] text-black transition-all active:scale-90"><span class="material-icons text-base">check</span></button>
+            </div>
+            <div class="member-list-row flex items-center gap-3 border-b border-white/[0.055] py-3" data-member-id="8" data-status="paid">
+              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-500/10 text-[10px] font-black text-indigo-400">M8</span>
+              <span class="member-name min-w-0 flex-1 truncate text-xs font-extrabold text-white">Member 08</span>
+              <button type="button" onclick="toggleMemberPaid(this)" aria-label="Mark Member 08 paid or not paid" aria-pressed="true" class="member-payment-toggle flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-[#C1FF72]/30 bg-[#C1FF72] text-black transition-all active:scale-90"><span class="material-icons text-base">check</span></button>
+            </div>
+            <div class="member-list-row flex items-center gap-3 border-b border-white/[0.055] py-3" data-member-id="9" data-status="unpaid">
+              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-orange-500/10 text-[10px] font-black text-orange-400">M9</span>
+              <span class="member-name min-w-0 flex-1 truncate text-xs font-extrabold text-white">Member 09</span>
+              <button type="button" onclick="toggleMemberPaid(this)" aria-label="Mark Member 09 paid or not paid" aria-pressed="false" class="member-payment-toggle flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-red-500/25 bg-red-500/10 text-red-400 transition-all active:scale-90"><span class="material-icons text-base">close</span></button>
+            </div>
+            <div class="member-list-row flex items-center gap-3 py-3" data-member-id="10" data-status="unpaid">
+              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-red-500/10 text-[10px] font-black text-red-400">M10</span>
+              <span class="member-name min-w-0 flex-1 truncate text-xs font-extrabold text-white">Member 10</span>
+              <button type="button" onclick="toggleMemberPaid(this)" aria-label="Mark Member 10 paid or not paid" aria-pressed="false" class="member-payment-toggle flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-red-500/25 bg-red-500/10 text-red-400 transition-all active:scale-90"><span class="material-icons text-base">close</span></button>
+            </div>
+          </div>
+        </div>
+
+        <button type="button" onclick="openEditMemberModal()"
+          class="group flex w-full items-center gap-3 rounded-[22px] border border-zinc-800 bg-zinc-900/50 p-3.5 text-left transition-all hover:bg-zinc-900/80 active:scale-[0.98]">
+          <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-orange-500/20 bg-orange-500/10 text-orange-400">
+            <span class="material-icons text-xl transition-transform group-hover:scale-110">edit</span>
+          </span>
+          <span class="min-w-0 flex-1">
+            <span class="block text-xs font-extrabold uppercase tracking-wider text-white">Edit Member</span>
+            <span class="mt-1 block text-[9px] font-semibold text-zinc-500">Choose a member and rename them.</span>
+          </span>
+          <span class="material-icons text-base text-zinc-600">chevron_right</span>
+        </button>
+      </section>
+      <!-- 3. Members Grid -->
+      <div class="hidden">
+        <div class="flex justify-between items-center">
+          <h3 class="text-xs font-extrabold uppercase tracking-widest text-gray-400">All members</h3>
+          <span class="text-[10px] font-bold text-gray-500">July 2026</span>
+        </div>
+        <!-- Member Cards Grid -->
+        <div class="grid grid-cols-2 gap-3.5">
+          <!-- Member 01 -->
+          <button onclick="triggerToast('Member 01 selected', 'person', 'text-[#C1FF72]')"
+            class="bg-zinc-900/60 hover:bg-zinc-900 border border-zinc-800 rounded-2xl p-4 flex flex-col justify-between h-28 text-left cursor-pointer transition-all active:scale-95">
+            <div class="flex justify-between items-start">
+              <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-[#C1FF72] text-[10px] font-black text-black">M1</span>
+              <span class="rounded-full bg-emerald-400/10 px-2 py-1 text-[8px] font-extrabold uppercase text-emerald-400">Paid</span>
+            </div>
+            <div>
+              <h4 class="text-xs font-extrabold text-white">Member 01</h4>
+              <p class="mt-1 text-[9px] font-semibold text-gray-500">AED 1,000 of 1,000</p>
+            </div>
+          </button>
+          <!-- Member 02 -->
+          <button onclick="triggerToast('Member 02 selected', 'person', 'text-[#C1FF72]')"
+            class="bg-zinc-900/60 hover:bg-zinc-900 border border-zinc-800 rounded-2xl p-4 flex flex-col justify-between h-28 text-left cursor-pointer transition-all active:scale-95">
+            <div class="flex justify-between items-start">
+              <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-400/10 text-[10px] font-black text-emerald-400">M2</span>
+              <span class="rounded-full bg-emerald-400/10 px-2 py-1 text-[8px] font-extrabold uppercase text-emerald-400">Paid</span>
+            </div>
+            <div>
+              <h4 class="text-xs font-extrabold text-white">Member 02</h4>
+              <p class="mt-1 text-[9px] font-semibold text-gray-500">AED 1,000 of 1,000</p>
+            </div>
+          </button>
+          <!-- Member 03 -->
+          <button onclick="triggerToast('Member 03 selected', 'person', 'text-[#C1FF72]')"
+            class="bg-zinc-900/60 hover:bg-zinc-900 border border-zinc-800 rounded-2xl p-4 flex flex-col justify-between h-28 text-left cursor-pointer transition-all active:scale-95">
+            <div class="flex justify-between items-start">
+              <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-sky-500/10 text-[10px] font-black text-sky-400">M3</span>
+              <span class="rounded-full bg-emerald-400/10 px-2 py-1 text-[8px] font-extrabold uppercase text-emerald-400">Paid</span>
+            </div>
+            <div>
+              <h4 class="text-xs font-extrabold text-white">Member 03</h4>
+              <p class="mt-1 text-[9px] font-semibold text-gray-500">AED 1,000 of 1,000</p>
+            </div>
+          </button>
+          <!-- Member 04 -->
+          <button onclick="triggerToast('Member 04 selected', 'person', 'text-[#C1FF72]')"
+            class="bg-zinc-900/60 hover:bg-zinc-900 border border-zinc-800 rounded-2xl p-4 flex flex-col justify-between h-28 text-left cursor-pointer transition-all active:scale-95">
+            <div class="flex justify-between items-start">
+              <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-purple-500/10 text-[10px] font-black text-purple-400">M4</span>
+              <span class="rounded-full bg-emerald-400/10 px-2 py-1 text-[8px] font-extrabold uppercase text-emerald-400">Paid</span>
+            </div>
+            <div>
+              <h4 class="text-xs font-extrabold text-white">Member 04</h4>
+              <p class="mt-1 text-[9px] font-semibold text-gray-500">AED 1,000 of 1,000</p>
+            </div>
+          </button>
+          <!-- Member 05 -->
+          <button onclick="triggerToast('Member 05 selected', 'person', 'text-[#C1FF72]')"
+            class="bg-zinc-900/60 hover:bg-zinc-900 border border-zinc-800 rounded-2xl p-4 flex flex-col justify-between h-28 text-left cursor-pointer transition-all active:scale-95">
+            <div class="flex justify-between items-start">
+              <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-500/10 text-[10px] font-black text-amber-400">M5</span>
+              <span class="rounded-full bg-emerald-400/10 px-2 py-1 text-[8px] font-extrabold uppercase text-emerald-400">Paid</span>
+            </div>
+            <div>
+              <h4 class="text-xs font-extrabold text-white">Member 05</h4>
+              <p class="mt-1 text-[9px] font-semibold text-gray-500">AED 1,000 of 1,000</p>
+            </div>
+          </button>
+          <!-- Member 06 -->
+          <button onclick="triggerToast('Member 06 selected', 'person', 'text-[#C1FF72]')"
+            class="bg-zinc-900/60 hover:bg-zinc-900 border border-zinc-800 rounded-2xl p-4 flex flex-col justify-between h-28 text-left cursor-pointer transition-all active:scale-95">
+            <div class="flex justify-between items-start">
+              <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-pink-500/10 text-[10px] font-black text-pink-400">M6</span>
+              <span class="rounded-full bg-emerald-400/10 px-2 py-1 text-[8px] font-extrabold uppercase text-emerald-400">Paid</span>
+            </div>
+            <div>
+              <h4 class="text-xs font-extrabold text-white">Member 06</h4>
+              <p class="mt-1 text-[9px] font-semibold text-gray-500">AED 1,000 of 1,000</p>
+            </div>
+          </button>
+          <!-- Member 07 -->
+          <button onclick="triggerToast('Member 07 selected', 'person', 'text-[#C1FF72]')"
+            class="bg-zinc-900/60 hover:bg-zinc-900 border border-zinc-800 rounded-2xl p-4 flex flex-col justify-between h-28 text-left cursor-pointer transition-all active:scale-95">
+            <div class="flex justify-between items-start">
+              <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-cyan-500/10 text-[10px] font-black text-cyan-400">M7</span>
+              <span class="rounded-full bg-emerald-400/10 px-2 py-1 text-[8px] font-extrabold uppercase text-emerald-400">Paid</span>
+            </div>
+            <div>
+              <h4 class="text-xs font-extrabold text-white">Member 07</h4>
+              <p class="mt-1 text-[9px] font-semibold text-gray-500">AED 1,000 of 1,000</p>
+            </div>
+          </button>
+          <!-- Member 08 -->
+          <button onclick="triggerToast('Member 08 selected', 'person', 'text-[#C1FF72]')"
+            class="bg-zinc-900/60 hover:bg-zinc-900 border border-zinc-800 rounded-2xl p-4 flex flex-col justify-between h-28 text-left cursor-pointer transition-all active:scale-95">
+            <div class="flex justify-between items-start">
+              <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-500/10 text-[10px] font-black text-indigo-400">M8</span>
+              <span class="rounded-full bg-emerald-400/10 px-2 py-1 text-[8px] font-extrabold uppercase text-emerald-400">Paid</span>
+            </div>
+            <div>
+              <h4 class="text-xs font-extrabold text-white">Member 08</h4>
+              <p class="mt-1 text-[9px] font-semibold text-gray-500">AED 1,000 of 1,000</p>
+            </div>
+          </button>
+          <!-- Member 09 -->
+          <button onclick="triggerToast('Member 09 selected', 'person', 'text-orange-400')"
+            class="bg-orange-500/[0.04] hover:bg-orange-500/[0.07] border border-orange-500/20 rounded-2xl p-4 flex flex-col justify-between h-28 text-left cursor-pointer transition-all active:scale-95">
+            <div class="flex justify-between items-start">
+              <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-orange-500/10 text-[10px] font-black text-orange-400">M9</span>
+              <span class="rounded-full bg-orange-500/10 px-2 py-1 text-[8px] font-extrabold uppercase text-orange-400">Partial</span>
+            </div>
+            <div>
+              <h4 class="text-xs font-extrabold text-white">Member 09</h4>
+              <p class="mt-1 text-[9px] font-semibold text-gray-500">AED 500 of 1,000</p>
+            </div>
+          </button>
+          <!-- Member 10 -->
+          <button onclick="triggerToast('Member 10 selected', 'person', 'text-red-400')"
+            class="bg-red-500/[0.04] hover:bg-red-500/[0.07] border border-red-500/20 rounded-2xl p-4 flex flex-col justify-between h-28 text-left cursor-pointer transition-all active:scale-95">
+            <div class="flex justify-between items-start">
+              <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-red-500/10 text-[10px] font-black text-red-400">M10</span>
+              <span class="rounded-full bg-red-500/10 px-2 py-1 text-[8px] font-extrabold uppercase text-red-400">Not Paid</span>
+            </div>
+            <div>
+              <h4 class="text-xs font-extrabold text-white">Member 10</h4>
+              <p class="mt-1 text-[9px] font-semibold text-gray-500">AED 0 of 1,000</p>
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
+    <!-- 5. Bottom Navigation Bar -->
+    <div
+      class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-[#0D0E12]/90 border-t border-zinc-800/80 backdrop-blur-md px-6 py-3 flex justify-between items-center z-40 rounded-t-3xl">
+      <!-- Home -->
+      <a href="./dashboard.html" class="flex flex-col items-center gap-1 text-gray-500 hover:text-white transition-all">
+        <span class="material-icons text-xl">home</span>
+        <span class="text-[9px] font-bold uppercase tracking-wider">Home</span>
+      </a>
+      <!-- Members -->
+      <a href="./plan.html" class="flex flex-col items-center gap-1 text-gray-500 hover:text-white transition-all">
+        <span class="material-icons text-xl">groups</span>
+        <span class="text-[9px] font-bold uppercase tracking-wider">Members</span>
+      </a>
+      <!-- Cart -->
+      <a href="./cart.html"
+        class="flex flex-col items-center gap-1 text-gray-500 hover:text-white transition-all relative">
+        <span class="material-icons text-xl">receipt_long</span>
+        <span class="text-[9px] font-bold uppercase tracking-wider">Add Expense</span>
+      </a>
+      <!-- Profile -->
+      <a href="./profile.html" class="flex flex-col items-center gap-1 text-gray-500 hover:text-white transition-all">
+        <span class="material-icons text-xl">person</span>
+        <span class="text-[9px] font-bold uppercase tracking-wider">Profile</span>
+      </a>
+    </div>
+    <!-- Members Micro-Notification Toast -->
+    <div id="calendarToast"
+      class="fixed bottom-24 left-1/2 -translate-x-1/2 bg-zinc-950 border border-zinc-800 text-orange-400 text-[11px] font-extrabold px-5 py-3.5 rounded-full shadow-2xl flex items-center gap-2 whitespace-nowrap opacity-0 pointer-events-none translate-y-3 transition-all duration-300 z-50">
+      <span class="material-icons text-sm">person</span>
+      <span id="toastMessage">Member selected</span>
+    </div>
+    <!-- Monthly Per-Member Contribution Modal -->
+    <div id="memberContributionModal"
+      class="fixed inset-0 z-50 hidden items-center justify-center bg-black/75 p-6 backdrop-blur-sm">
+      <form onsubmit="saveMemberContributionAmount(event)"
+        class="w-full max-w-xs space-y-4 rounded-[28px] border border-white/[0.09] bg-[#111115] p-5 shadow-2xl">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <p class="text-[9px] font-extrabold uppercase tracking-[0.16em] text-[#C1FF72]">Monthly contribution</p>
+            <h3 class="mt-1 text-base font-extrabold text-white">Edit per member</h3>
+            <p id="memberContributionMonthLabel" class="mt-1 text-[9px] font-semibold text-zinc-500">July 2026</p>
+          </div>
+          <button type="button" onclick="closeMemberContributionModal()" aria-label="Close per-member amount popup"
+            class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/[0.07] bg-white/[0.035] text-zinc-400">
+            <span class="material-icons text-sm">close</span>
+          </button>
+        </div>
+
+        <label class="block space-y-1.5">
+          <span class="text-[9px] font-extrabold uppercase tracking-wider text-zinc-500">Amount per member (AED)</span>
+          <input id="memberContributionInput" type="number" min="1" step="1" inputmode="decimal" required
+            class="w-full rounded-2xl border border-zinc-800 bg-zinc-900 px-4 py-3 text-sm font-extrabold text-white outline-none focus:border-[#C1FF72]/40" />
+        </label>
+        <p class="text-[9px] font-semibold leading-relaxed text-zinc-500">Expected total will update automatically for all active members.</p>
+        <p id="memberContributionError" class="hidden text-[9px] font-bold text-red-400">Enter an amount greater than AED 0.</p>
+
+        <div class="grid grid-cols-2 gap-2">
+          <button type="button" onclick="closeMemberContributionModal()"
+            class="rounded-2xl border border-white/[0.07] bg-white/[0.025] py-3 text-[9px] font-black uppercase tracking-wider text-zinc-400">Cancel</button>
+          <button type="submit"
+            class="rounded-2xl bg-[#C1FF72] py-3 text-[9px] font-black uppercase tracking-wider text-black active:scale-[0.98]">Save amount</button>
+        </div>
+      </form>
+    </div>
+    <!-- Add Member Modal -->
+    <div id="addMemberModal" onclick="closeAddMemberModal(event)"
+      class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/75 p-6 opacity-0 backdrop-blur-sm transition-opacity duration-300">
+      <div onclick="event.stopPropagation()"
+        class="add-member-panel w-full max-w-[340px] scale-95 space-y-5 rounded-[30px] border border-white/[0.09] bg-[#111115]/95 p-5 shadow-[0_30px_90px_rgba(0,0,0,0.65)] transition-transform duration-300">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <span class="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#C1FF72]/10 text-[#C1FF72]">
+              <span class="material-icons text-lg">person_add</span>
+            </span>
+            <div>
+              <p class="text-[9px] font-extrabold uppercase tracking-[0.16em] text-[#C1FF72]">Members</p>
+              <h3 class="mt-0.5 text-sm font-extrabold text-white">Add new member</h3>
+            </div>
+          </div>
+          <button type="button" onclick="closeAddMemberModal()" aria-label="Close add member popup"
+            class="flex h-8 w-8 items-center justify-center rounded-full border border-white/[0.07] bg-white/[0.035] text-zinc-400">
+            <span class="material-icons text-sm">close</span>
+          </button>
+        </div>
+
+        <label class="block space-y-1.5">
+          <span class="text-[9px] font-extrabold uppercase tracking-wider text-zinc-500">Member name</span>
+          <input id="addMemberNameInput" onkeydown="if (event.key === 'Enter') saveNewMember()" type="text" maxlength="40"
+            placeholder="Enter member name"
+            class="w-full rounded-2xl border border-zinc-800 bg-zinc-900 px-4 py-3 text-xs font-bold text-white outline-none placeholder:text-zinc-600 focus:border-[#C1FF72]/40" />
+        </label>
+
+        <div class="rounded-2xl border border-white/[0.06] bg-white/[0.025] px-4 py-3">
+          <div class="flex items-center gap-2 text-[9px] font-semibold text-zinc-500">
+            <span class="material-icons text-sm text-orange-400">info</span>
+            New members start as Not Paid.
+          </div>
+        </div>
+
+        <button type="button" onclick="saveNewMember()"
+          class="w-full rounded-2xl bg-[#C1FF72] py-3 text-[10px] font-black uppercase tracking-wider text-black transition-all active:scale-[0.98]">Add Member</button>
+      </div>
+    </div>
+    <!-- Edit Member Modal -->
+    <div id="editMemberModal" onclick="closeEditMemberModal(event)"
+      class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/75 p-6 opacity-0 backdrop-blur-sm transition-opacity duration-300">
+      <div onclick="event.stopPropagation()"
+        class="edit-member-panel w-full max-w-[340px] scale-95 space-y-5 rounded-[30px] border border-white/[0.09] bg-[#111115]/95 p-5 shadow-[0_30px_90px_rgba(0,0,0,0.65)] transition-transform duration-300">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <span class="flex h-10 w-10 items-center justify-center rounded-2xl bg-orange-500/10 text-orange-400">
+              <span class="material-icons text-lg">edit</span>
+            </span>
+            <div>
+              <p class="text-[9px] font-extrabold uppercase tracking-[0.16em] text-orange-400">Members</p>
+              <h3 class="mt-0.5 text-sm font-extrabold text-white">Edit member name</h3>
+            </div>
+          </div>
+          <button type="button" onclick="closeEditMemberModal()" aria-label="Close edit member popup"
+            class="flex h-8 w-8 items-center justify-center rounded-full border border-white/[0.07] bg-white/[0.035] text-zinc-400">
+            <span class="material-icons text-sm">close</span>
+          </button>
+        </div>
+
+        <div class="space-y-3">
+          <label class="block space-y-1.5">
+            <span class="text-[9px] font-extrabold uppercase tracking-wider text-zinc-500">Choose member</span>
+            <select id="editMemberSelect" onchange="prepareMemberRename()"
+              class="w-full appearance-none rounded-2xl border border-zinc-800 bg-zinc-900 px-4 py-3 text-xs font-bold text-white outline-none focus:border-orange-500/40">
+              <option value="1">Member 01</option><option value="2">Member 02</option><option value="3">Member 03</option><option value="4">Member 04</option><option value="5">Member 05</option><option value="6">Member 06</option><option value="7">Member 07</option><option value="8">Member 08</option><option value="9">Member 09</option><option value="10">Member 10</option>
+            </select>
+          </label>
+          <label class="block space-y-1.5">
+            <span class="text-[9px] font-extrabold uppercase tracking-wider text-zinc-500">New name</span>
+            <input id="editMemberNameInput" type="text" maxlength="40" placeholder="Enter member name"
+              class="w-full rounded-2xl border border-zinc-800 bg-zinc-900 px-4 py-3 text-xs font-bold text-white outline-none placeholder:text-zinc-600 focus:border-orange-500/40" />
+          </label>
+        </div>
+
+        <button type="button" onclick="saveMemberRename()"
+          class="w-full rounded-2xl bg-[#C1FF72] py-3 text-[10px] font-black uppercase tracking-wider text-black transition-all active:scale-[0.98]">Save Name</button>
+      </div>
+    </div>
+  </div>
+  <!-- 3. INTERACTIVE SLIDEOUT SIDEBAR DRAWER (Glassmorphism & Search) -->
+  <!-- Overlay backdrop -->
+  <div id="sidebarBackdrop" class="absolute inset-0 bg-black/80 z-40 hidden opacity-0 transition-opacity duration-300">
+  </div>
+  <!-- Redesigned Premium Sidebar Panel -->
+  <div id="sidebarMenu"
+    class="absolute inset-y-0 left-0 w-80 bg-[#090A0E]/95 border-r border-white/[0.06] backdrop-blur-2xl z-50 transform -translate-x-full transition-transform duration-500 ease-out flex flex-col justify-between p-6 overflow-y-auto no-scrollbar">
+    <div class="space-y-5">
+      <!-- Sidebar Profile & Close Header -->
+      <div class="flex justify-between items-center pb-4 border-b border-white/[0.04]">
+        <div class="flex items-center gap-3">
+          <div id="budgetIQSidebarAvatar"
+            class="w-10 h-10 bg-[#C1FF72] text-black text-sm font-black rounded-full flex items-center justify-center">
+            A
+          </div>
+          <div>
+            <h4 id="budgetIQSidebarUser" class="text-xs font-extrabold text-white">Admin ⚡</h4>
+            <p class="text-[9px] text-gray-500 font-semibold">BudgetIQ Workspace</p>
+          </div>
+        </div>
+        <!-- Styled Close Button -->
+        <button id="closeSidebarBtn"
+          class="w-8 h-8 rounded-full bg-white/[0.03] border border-white/[0.08] flex items-center justify-center text-gray-400 hover:text-white transition-all">
+          <span class="material-icons text-sm">close</span>
+        </button>
+      </div>
+      <!-- NEW: Live Screen Search Box (UX upgrade) -->
+      <div
+        class="flex bg-white/[0.03] border border-white/[0.06] focus-within:border-[#C1FF72]/40 rounded-xl p-1 transition-all">
+        <span class="material-icons text-gray-500 text-sm px-2 flex items-center">search</span>
+        <input id="screenSearch" onkeyup="searchScreens()" type="text" placeholder="Search"
+          class="bg-transparent w-full outline-none py-2 text-[10px] font-bold uppercase tracking-wider placeholder-gray-600 text-white" />
+      </div>
+      <!-- CATEGORIZED DIRECTORY -->
+      <div id="linksContainer" class="space-y-5 overflow-y-auto no-scrollbar pr-1 max-h-[440px]">
+        <!-- Category 2: User Core App -->
+        <div class="category-sec space-y-2">
+          <h4 class="text-[8px] font-black uppercase tracking-widest text-[#C1FF72]">User Core App</h4>
+          <div class="space-y-1 text-xs">
+            <a href="./dashboard.html"
+              class="nav-link-item flex items-center justify-between py-2 px-3 text-gray-400 hover:text-[#C1FF72] rounded-xl hover:bg-white/[0.03] transition-all font-semibold group">
+              <span class="flex items-center gap-2 group-hover:translate-x-1.5 transition-transform"><span
+                  class="material-icons text-sm text-gray-500 group-hover:text-[#C1FF72]">home</span> Home
+                Dashboard</span>
+            </a>
+          </div>
+        </div>
+        <!-- Category 4: Profile and history -->
+        <div class="category-sec space-y-2">
+          <h4 class="text-[8px] font-black uppercase tracking-widest text-purple-400">Profile &amp; History</h4>
+          <div class="space-y-1 text-xs">
+            <a href="./profile.html"
+              class="nav-link-item flex items-center justify-between py-2 px-3 text-gray-400 hover:text-[#C1FF72] rounded-xl hover:bg-white/[0.03] transition-all font-semibold group">
+              <span class="flex items-center gap-2 group-hover:translate-x-1.5 transition-transform"><span
+                  class="material-icons text-sm text-gray-500 group-hover:text-[#C1FF72]">person</span> Profile</span>
+            </a>
+            <a href="./history.html"
+              class="nav-link-item flex items-center justify-between py-2 px-3 text-gray-400 hover:text-[#C1FF72] rounded-xl hover:bg-white/[0.03] transition-all font-semibold group">
+              <span class="flex items-center gap-2 group-hover:translate-x-1.5 transition-transform"><span
+                  class="material-icons text-sm text-gray-500 group-hover:text-[#C1FF72]">history</span> History</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Sidebar Footer -->
+    <div
+      class="pt-4 border-t border-white/[0.04] flex items-center justify-between text-[10px] text-gray-500 font-semibold uppercase tracking-wider">
+      <span id="budgetIQSidebarFooterUser">Admin</span>
+      <span>v1.0.7 ⚡</span>
+    </div>
+  </div>
+</body>
+
+</html>

@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <!-- PWA: installable app (Add to Home Screen) -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#0A0A0C">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="BudgetIQ">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="icon" href="img/logo.png" type="image/png">
+  <title>BudgetIQ</title>
+  <!-- Tailwind CSS CDN -->
+  <link rel="stylesheet" href="css/tailwind.min.css?v=1">
+  <link rel="preload" href="fonts/material-icons.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/style.css?v=4">
+  <script defer src="js/budgetiq-core.js?v=59"></script>
+</head>
+
+<body class="bg-[#0A0A0C] min-h-screen flex items-center justify-center">
+  <!-- Pure Mobile View Container (Full screen on mobile, centered on desktop) -->
+  <div
+    class="w-full max-w-md min-h-screen bg-[#0A0A0C] text-white flex flex-col justify-between p-8 relative overflow-hidden">
+    <!-- Ambient Glow Effects (Top Right & Bottom Left) -->
+    <div
+      class="absolute top-[-10%] right-[-10%] w-56 h-56 bg-orange-500/20 rounded-full blur-[80px] pointer-events-none">
+    </div>
+    <div
+      class="absolute bottom-[-10%] left-[-10%] w-56 h-56 bg-[#C1FF72]/10 rounded-full blur-[80px] pointer-events-none">
+    </div>
+    <!-- 1. Top Badges & Quirky Intro -->
+    <div class="flex justify-between items-center z-10">
+      <!-- Sleek Minimal Logo Text -->
+      <div class="flex items-center gap-1.5">
+        <img src="img/budgetiq-logo.png" alt="BudgetIQ logo" class="w-6 h-6 rounded-md object-contain">
+        <span class="text-xs font-bold tracking-widest text-gray-400">BudgetIQ.</span>
+      </div>
+
+      <!-- Native mobile user selector: four fixed roles in the iPhone scroll picker -->
+      <label
+        class="relative flex min-w-[96px] items-center gap-1.5 rounded-full border border-white/[0.07] bg-white/[0.035] p-1.5 pr-2 shadow-[0_8px_24px_rgba(0,0,0,0.18)] backdrop-blur-xl transition-all active:scale-95">
+        <span id="currentUserAvatar"
+          class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#C1FF72] text-[8px] font-black text-black shadow-[0_0_16px_rgba(193,255,114,0.12)]">A</span>
+        <span id="currentUserName" class="min-w-0 flex-1 truncate text-[9px] font-extrabold text-zinc-200">Admin</span>
+        <span class="material-icons text-[12px] text-zinc-600">keyboard_arrow_down</span>
+        <select id="splashUserSelect" aria-label="Choose user" onchange="requestSplashUserUnlock(this)"
+          class="absolute inset-0 h-full w-full cursor-pointer opacity-0">
+          <option value="admin" data-initial="A">Admin</option>
+          <option value="user-1" data-initial="U1">User 1</option>
+          <option value="user-2" data-initial="U2">User 2</option>
+          <option value="auditor" data-initial="FA">Financial Auditor</option>
+        </select>
+      </label>
+    </div>
+    <!-- 2. Hero / Center Section -->
+    <div class="flex flex-col items-start justify-center flex-grow py-12 z-10">
+      <!-- Main Heading (Bold, Lowercase Gen-Z style) -->
+      <h1 class="text-4xl font-extrabold tracking-tight leading-[1.15] text-white">
+        One wallet. <br>
+        <span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-600">Complete control.</span>
+      </h1>
+      <!-- Subtext -->
+      <p class="text-gray-400 text-sm font-medium mt-4 leading-relaxed max-w-[280px]">
+        Know exactly where your money goes.
+      </p>
+    </div>
+    <!-- 3. Bottom Action Section -->
+    <div class="flex flex-col gap-4 z-10">
+      <!-- Key Feature Quick Row -->
+      <div
+        class="flex items-center justify-around py-3 px-2 bg-zinc-900/50 rounded-2xl border border-zinc-800/80 mb-2 backdrop-blur-sm">
+        <div class="flex items-center gap-1">
+          <span class="material-icons text-[#C1FF72] text-xs">done</span>
+          <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Shared Budget</span>
+        </div>
+        <div class="w-1.5 h-1.5 bg-zinc-700 rounded-full"></div>
+        <div class="flex items-center gap-1">
+          <span class="material-icons text-[#C1FF72] text-xs">done</span>
+          <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Live Tracking</span>
+        </div>
+      </div>
+      <!-- Neon CTA Button -->
+      <a id="splashStartButton" href="./dashboard.html" onclick="return unlockSplashUserBeforeStart(event)"
+        class="w-full bg-[#C1FF72] hover:bg-[#b0f55c] active:scale-[0.98] text-black font-extrabold py-3.5 px-6 rounded-2xl shadow-[0_8px_30px_rgb(193,255,114,0.15)] transition-all flex items-center justify-center gap-2 text-sm uppercase tracking-wider group">
+        <span>Let's Get Started</span>
+        <span class="material-icons text-sm transition-transform group-hover:translate-x-1">arrow_forward</span>
+      </a>
+    </div>
+
+    <!-- Small in-app password popup for the selected local user -->
+    <div id="userPasswordModal"
+      class="absolute inset-0 z-30 hidden items-center justify-center bg-black/75 p-6 backdrop-blur-sm">
+      <form onsubmit="submitSplashUserPassword(event)"
+        class="w-full max-w-[310px] rounded-[26px] border border-white/[0.09] bg-zinc-950 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.55)]">
+        <div class="flex items-start justify-between">
+          <div class="flex items-center gap-3">
+            <span
+              class="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#C1FF72]/10 text-[#C1FF72]">
+              <span class="material-icons text-lg">lock</span>
+            </span>
+            <div>
+              <p id="userPasswordEyebrow"
+                class="text-[8px] font-black uppercase tracking-[0.2em] text-[#C1FF72]">User security</p>
+              <h2 id="userPasswordTitle" class="mt-1 text-sm font-extrabold text-white">Unlock Admin</h2>
+            </div>
+          </div>
+          <button type="button" onclick="closeUserPasswordModal()" aria-label="Close password popup"
+            class="flex h-7 w-7 items-center justify-center rounded-full bg-white/[0.04] text-zinc-500 transition-colors hover:text-white">
+            <span class="material-icons text-sm">close</span>
+          </button>
+        </div>
+
+        <p id="userPasswordDescription" class="mt-4 text-[10px] font-semibold leading-relaxed text-zinc-500">
+          Enter this user's password to continue.
+        </p>
+
+        <div class="mt-4 space-y-2.5">
+          <input id="userPasswordInput" type="password" minlength="4" required autocomplete="current-password"
+            placeholder="Password"
+            class="w-full rounded-2xl border border-white/[0.08] bg-white/[0.035] px-4 py-3 text-xs font-bold text-white outline-none placeholder:text-zinc-700 focus:border-[#C1FF72]/50" />
+          <div id="userPasswordConfirmWrap" class="hidden">
+            <input id="userPasswordConfirmInput" type="password" minlength="4" placeholder="Confirm password"
+              class="w-full rounded-2xl border border-white/[0.08] bg-white/[0.035] px-4 py-3 text-xs font-bold text-white outline-none placeholder:text-zinc-700 focus:border-[#C1FF72]/50" />
+          </div>
+          <p id="userPasswordError" class="hidden px-1 text-[9px] font-bold text-red-400"></p>
+        </div>
+
+        <div class="mt-4 grid grid-cols-2 gap-2.5">
+          <button type="button" onclick="closeUserPasswordModal()"
+            class="rounded-2xl border border-white/[0.07] bg-white/[0.025] py-3 text-[9px] font-black uppercase tracking-wider text-zinc-400">
+            Cancel
+          </button>
+          <button id="userPasswordSubmitButton" type="submit"
+            class="rounded-2xl bg-[#C1FF72] py-3 text-[9px] font-black uppercase tracking-wider text-black shadow-[0_8px_24px_rgba(193,255,114,0.1)]">
+            Unlock
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 3. INTERACTIVE SLIDEOUT SIDEBAR DRAWER (Glassmorphism & Search) -->
+  <!-- Overlay backdrop -->
+  <div id="sidebarBackdrop" class="absolute inset-0 bg-black/80 z-40 hidden opacity-0 transition-opacity duration-300">
+  </div>
+  <!-- Redesigned Premium Sidebar Panel -->
+  <div id="sidebarMenu"
+    class="absolute inset-y-0 left-0 w-80 bg-[#090A0E]/95 border-r border-white/[0.06] backdrop-blur-2xl z-50 transform -translate-x-full transition-transform duration-500 ease-out flex flex-col justify-between p-6 overflow-y-auto no-scrollbar">
+    <div class="space-y-5">
+      <!-- Sidebar Profile & Close Header -->
+      <div class="flex justify-between items-center pb-4 border-b border-white/[0.04]">
+        <div class="flex items-center gap-3">
+          <div id="budgetIQSidebarAvatar"
+            class="w-10 h-10 bg-[#C1FF72] text-black text-sm font-black rounded-full flex items-center justify-center">
+            A
+          </div>
+          <div>
+            <h4 id="budgetIQSidebarUser" class="text-xs font-extrabold text-white">Admin ⚡</h4>
+            <p class="text-[9px] text-gray-500 font-semibold">BudgetIQ Workspace</p>
+          </div>
+        </div>
+        <!-- Styled Close Button -->
+        <button id="closeSidebarBtn"
+          class="w-8 h-8 rounded-full bg-white/[0.03] border border-white/[0.08] flex items-center justify-center text-gray-400 hover:text-white transition-all">
+          <span class="material-icons text-sm">close</span>
+        </button>
+      </div>
+      <!-- NEW: Live Screen Search Box (UX upgrade) -->
+      <div
+        class="flex bg-white/[0.03] border border-white/[0.06] focus-within:border-[#C1FF72]/40 rounded-xl p-1 transition-all">
+        <span class="material-icons text-gray-500 text-sm px-2 flex items-center">search</span>
+        <input id="screenSearch" onkeyup="searchScreens()" type="text" placeholder="Search"
+          class="bg-transparent w-full outline-none py-2 text-[10px] font-bold uppercase tracking-wider placeholder-gray-600 text-white" />
+      </div>
+      <!-- CATEGORIZED DIRECTORY -->
+      <div id="linksContainer" class="space-y-5 overflow-y-auto no-scrollbar pr-1 max-h-[440px]">
+        <!-- Category 2: User Core App -->
+        <div class="category-sec space-y-2">
+          <h4 class="text-[8px] font-black uppercase tracking-widest text-[#C1FF72]">User Core App</h4>
+          <div class="space-y-1 text-xs">
+            <a href="./dashboard.html"
+              class="nav-link-item flex items-center justify-between py-2 px-3 text-gray-400 hover:text-[#C1FF72] rounded-xl hover:bg-white/[0.03] transition-all font-semibold group">
+              <span class="flex items-center gap-2 group-hover:translate-x-1.5 transition-transform"><span
+                  class="material-icons text-sm text-gray-500 group-hover:text-[#C1FF72]">home</span> Home
+                Dashboard</span>
+            </a>
+          </div>
+        </div>
+        <!-- Category 4: Profile and history -->
+        <div class="category-sec space-y-2">
+          <h4 class="text-[8px] font-black uppercase tracking-widest text-purple-400">Profile &amp; History</h4>
+          <div class="space-y-1 text-xs">
+            <a href="./profile.html"
+              class="nav-link-item flex items-center justify-between py-2 px-3 text-gray-400 hover:text-[#C1FF72] rounded-xl hover:bg-white/[0.03] transition-all font-semibold group">
+              <span class="flex items-center gap-2 group-hover:translate-x-1.5 transition-transform"><span
+                  class="material-icons text-sm text-gray-500 group-hover:text-[#C1FF72]">person</span> Profile</span>
+            </a>
+            <a href="./history.html"
+              class="nav-link-item flex items-center justify-between py-2 px-3 text-gray-400 hover:text-[#C1FF72] rounded-xl hover:bg-white/[0.03] transition-all font-semibold group">
+              <span class="flex items-center gap-2 group-hover:translate-x-1.5 transition-transform"><span
+                  class="material-icons text-sm text-gray-500 group-hover:text-[#C1FF72]">history</span> History</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Sidebar Footer -->
+    <div
+      class="pt-4 border-t border-white/[0.04] flex items-center justify-between text-[10px] text-gray-500 font-semibold uppercase tracking-wider">
+      <span id="budgetIQSidebarFooterUser">Admin</span>
+      <span>v1.0.7 ⚡</span>
+    </div>
+  </div>
+</body>
+
+</html>

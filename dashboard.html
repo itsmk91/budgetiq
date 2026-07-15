@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <!-- PWA: installable app (Add to Home Screen) -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#0A0A0C">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="BudgetIQ">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="icon" href="img/logo.png" type="image/png">
+  <title>BudgetIQ</title>
+  <!-- Tailwind CSS CDN -->
+  <link rel="stylesheet" href="css/tailwind.min.css?v=1">
+  <link rel="preload" href="fonts/material-icons.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/style.css?v=4">
+  <script defer src="js/budgetiq-core.js?v=59"></script>
+</head>
+
+<body class="bg-[#0A0A0C] min-h-screen flex items-center justify-center relative">
+  <!-- Pure Mobile View Container (Full screen on mobile, centered on desktop) -->
+  <div
+    class="w-full max-w-md min-h-screen bg-[#0A0A0C] text-white flex flex-col justify-between relative pb-24 select-none shadow-2xl">
+    <!-- Ambient Soft Glow Background spots -->
+    <div class="absolute top-0 right-0 w-64 h-64 bg-orange-500/10 rounded-full blur-[90px] pointer-events-none"></div>
+    <div class="absolute bottom-20 left-0 w-64 h-64 bg-[#C1FF72]/15 rounded-full blur-[90px] pointer-events-none"></div>
+    <!-- Scrollable Content Area -->
+    <div class="flex-grow overflow-y-auto no-scrollbar p-6 space-y-6 z-10">
+      <!-- 1. Header (User Info & Interactive Month Button) -->
+      <div class="flex justify-between items-center">
+        <div class="flex justify-between items-center gap-3">
+          <button id="hamburgerBtn"
+            class="w-11 h-11 rounded-full bg-white/[0.03] border border-white/[0.08] flex items-center justify-center text-gray-400 hover:text-[#C1FF72] hover:border-[#C1FF72]/40 transition-all duration-300 active:scale-95 shadow-md">
+            <span class="material-icons text-xl">menu</span>
+          </button>
+          <div>
+            <h4 class="text-[9px] font-bold text-gray-500 uppercase tracking-widest">hey 👋</h4>
+            <h2 id="homeUserName" class="mt-0.5 text-base font-extrabold text-white">Admin!</h2>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <!-- Return to the app's first screen -->
+          <a href="./splash.html" aria-label="Back to welcome screen"
+            class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.03] text-zinc-500 shadow-md transition-all hover:border-[#C1FF72]/30 hover:text-[#C1FF72] active:scale-95">
+            <span class="material-icons" style="font-size: 14px;">logout</span>
+          </a>
+          <!-- Compact active fund month selector -->
+          <button id="monthBtn"
+            class="group relative min-w-[96px] overflow-hidden rounded-xl border border-[#C1FF72]/15 bg-gradient-to-br from-[#C1FF72]/[0.08] to-white/[0.025] p-1.5 text-left shadow-[0_10px_30px_rgba(0,0,0,0.18)] transition-all active:scale-95">
+            <span class="absolute -right-4 -top-5 h-16 w-16 rounded-full bg-[#C1FF72]/10 blur-2xl"></span>
+            <span class="relative flex items-center gap-1.5">
+              <span
+                class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-[#C1FF72]/15 bg-[#C1FF72]/10 text-[#C1FF72]">
+                <span class="material-icons" style="font-size: 14px;">calendar_today</span>
+              </span>
+              <span class="min-w-0 flex-1">
+                <span id="monthText" class="block truncate text-[9px] font-extrabold text-zinc-200">July 2026</span>
+              </span>
+              <span class="material-icons text-zinc-600 transition-transform group-hover:translate-x-0.5" style="font-size: 12px;">chevron_right</span>
+            </span>
+          </button>
+        </div>
+      </div>
+      <!-- 2. Main Family Fund Balance Card -->
+      <section
+        class="relative w-full overflow-hidden rounded-[28px] border border-white/[0.12] bg-gradient-to-r from-orange-500 via-orange-500 to-red-600 p-5 shadow-lg shadow-orange-950/20">
+        <div class="absolute -right-10 -top-12 h-40 w-40 rounded-full bg-white/15 blur-[50px]"></div>
+        <div class="absolute -bottom-16 -left-10 h-32 w-32 rounded-full bg-[#C1FF72]/15 blur-[45px]"></div>
+
+        <div class="relative z-10">
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="text-[9px] font-extrabold uppercase tracking-[0.18em] text-white/65">Current balance</p>
+              <div class="mt-2 flex items-baseline gap-1.5">
+                <h3 id="fundCurrentBalance" class="text-3xl font-black tracking-tight text-white">AED 0</h3>
+                <span class="text-[9px] font-black uppercase tracking-wider text-white/80">Available</span>
+              </div>
+            </div>
+            <button type="button" onclick="openExpectedAmountModal()" aria-label="Edit expected amount"
+              class="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/20 bg-white/15 text-white shadow-[0_8px_25px_rgba(0,0,0,0.08)] transition-transform active:scale-95">
+              <span class="material-icons text-lg">edit</span>
+            </button>
+          </div>
+
+          <div class="mt-5 grid grid-cols-3 gap-2 border-t border-white/20 pt-4">
+            <div>
+              <p class="text-[8px] font-bold uppercase tracking-wider text-white/60">Expected</p>
+              <p id="fundExpected" class="mt-1 text-xs font-extrabold text-white">AED 10,000</p>
+            </div>
+            <div class="border-x border-white/15 px-3">
+              <p class="text-[8px] font-bold uppercase tracking-wider text-white/60">Collected</p>
+              <p id="fundCollected" class="mt-1 text-xs font-extrabold text-white">AED 0</p>
+            </div>
+            <div class="pl-1">
+              <p class="text-[8px] font-bold uppercase tracking-wider text-white/60">Expenses</p>
+              <p id="fundExpenses" class="mt-1 text-xs font-extrabold text-white">AED 0</p>
+            </div>
+          </div>
+
+          <div class="mt-4">
+            <div class="mb-2 flex items-center justify-between">
+              <span class="text-[8px] font-bold uppercase tracking-wider text-white/60">Collection progress</span>
+              <span id="fundCollectionPercent" class="text-[9px] font-black text-white">0%</span>
+            </div>
+            <div class="h-1.5 overflow-hidden rounded-full bg-black/20">
+              <div id="fundCollectionProgress" class="h-full rounded-full bg-gradient-to-r from-[#C1FF72] to-emerald-400 shadow-[0_0_14px_rgba(193,255,114,0.28)] transition-[width] duration-300" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- 3. Contribution Status Section -->
+      <div class="space-y-4">
+        <div class="flex justify-between items-center">
+          <h3 class="text-sm font-extrabold uppercase tracking-widest text-gray-400">Payment status</h3>
+          <span
+            class="rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1.5 text-[9px] font-extrabold uppercase tracking-wider text-zinc-400"><span id="fundMemberTotal">10</span> members</span>
+        </div>
+        <!-- Compact contribution summary card -->
+        <div
+          class="bg-zinc-900/60 border border-zinc-800 rounded-[24px] p-4 flex gap-4 items-center transition-all duration-300">
+          <div
+            class="w-20 h-20 bg-gradient-to-tr from-amber-500 to-orange-500 rounded-2xl flex items-center justify-center shrink-0 shadow-inner transition-colors duration-300">
+            <span class="material-icons text-white text-4xl">groups</span>
+          </div>
+          <div class="min-w-0 flex-grow">
+            <div class="flex items-center gap-2">
+              <span
+                class="inline-flex items-center gap-1.5 rounded-full bg-emerald-400/10 px-2 py-1 text-[8px] font-black uppercase tracking-wide text-emerald-400">
+                <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span><span id="fundPaidCount">0</span> paid
+              </span>
+              <span
+                class="inline-flex items-center gap-1.5 rounded-full bg-red-500/10 px-2 py-1 text-[8px] font-black uppercase tracking-wide text-red-400">
+                <span class="h-1.5 w-1.5 rounded-full bg-red-400"></span><span id="fundUnpaidCount">10</span> not paid
+              </span>
+            </div>
+            <div class="mt-2 flex items-baseline gap-1.5">
+              <h4 id="fundAmountLeft" class="text-lg font-black tracking-tight text-white">AED 10,000</h4>
+              <span class="text-[8px] font-black uppercase tracking-wider text-orange-400">left</span>
+            </div>
+            <p class="mt-0.5 text-[9px] font-semibold text-zinc-500">To complete the <span id="fundTotalTarget">AED 10,000</span> total</p>
+            <div class="mt-2 h-1 overflow-hidden rounded-full bg-white/[0.06]">
+              <div id="fundStatusProgress" class="h-full rounded-full bg-gradient-to-r from-[#C1FF72] to-emerald-400 transition-[width] duration-300" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- 4. BudgetIQ Quick Actions -->
+      <div class="space-y-4">
+        <h3 class="text-sm font-extrabold uppercase tracking-widest text-gray-400">Quick actions</h3>
+        <div class="grid grid-cols-2 gap-3">
+          <!-- 1. Manage Members -->
+          <a href="./plan.html"
+            class="block bg-zinc-900/50 hover:bg-zinc-900/80 border border-zinc-800 rounded-2xl p-4 space-y-2 transition-all cursor-pointer group active:scale-[0.98]">
+            <div class="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center">
+              <span
+                class="material-icons text-sky-500 text-xl group-hover:scale-110 transition-transform">groups</span>
+            </div>
+            <h4 class="text-xs font-bold text-white uppercase tracking-wider">Manage Members</h4>
+            <p class="text-[9px] text-gray-500 font-semibold leading-normal">Add members and set amounts.</p>
+          </a>
+          <!-- 2. Transactions -->
+          <a href="./history.html"
+            class="block bg-zinc-900/50 hover:bg-zinc-900/80 border border-zinc-800 rounded-2xl p-4 space-y-2 transition-all cursor-pointer group active:scale-[0.98]">
+            <div
+              class="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
+              <span
+                class="material-icons text-purple-500 text-xl group-hover:scale-110 transition-transform">history</span>
+            </div>
+            <h4 class="text-xs font-bold text-white uppercase tracking-wider">Transactions</h4>
+            <p class="text-[9px] text-gray-500 font-semibold leading-normal">Review all fund activity.</p>
+          </a>
+        </div>
+      </div>
+    </div>
+    <!-- 5. Sticky Bottom Navigation Bar -->
+    <div
+      class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-[#0D0E12]/90 border-t border-zinc-800/80 backdrop-blur-md px-6 py-3 flex justify-between items-center z-40 rounded-t-3xl">
+      <!-- Home -->
+      <a href="./dashboard.html" class="flex flex-col items-center gap-1 text-gray-500 hover:text-white transition-all">
+        <span class="material-icons text-xl">home</span>
+        <span class="text-[9px] font-bold uppercase tracking-wider">Home</span>
+      </a>
+      <!-- Members -->
+      <a href="./plan.html" class="flex flex-col items-center gap-1 text-gray-500 hover:text-white transition-all">
+        <span class="material-icons text-xl">groups</span>
+        <span class="text-[9px] font-bold uppercase tracking-wider">Members</span>
+      </a>
+      <!-- Cart -->
+      <a href="./cart.html"
+        class="flex flex-col items-center gap-1 text-gray-500 hover:text-white transition-all relative">
+        <span class="material-icons text-xl">receipt_long</span>
+        <span class="text-[9px] font-bold uppercase tracking-wider">Add Expense</span>
+      </a>
+      <!-- Profile -->
+      <a href="./profile.html" class="flex flex-col items-center gap-1 text-gray-500 hover:text-white transition-all">
+        <span class="material-icons text-xl">person</span>
+        <span class="text-[9px] font-bold uppercase tracking-wider">Profile</span>
+      </a>
+    </div>
+    <!-- Dynamic Micro-Notification popup -->
+    <div id="toastNotification"
+      class="fixed bottom-24 left-1/2 -translate-x-1/2 bg-zinc-950 border border-zinc-800 text-[#C1FF72] text-[11px] font-bold px-5 py-3 rounded-full shadow-2xl flex items-center gap-2 whitespace-nowrap opacity-0 pointer-events-none translate-y-3 transition-all duration-300 z-50">
+      <span class="material-icons text-sm">check_circle</span>
+      <span id="toastText">Action Successful!</span>
+    </div>
+    <!-- 6. INTERACTIVE MODAL & SHEET OVERLAYS -->
+    <!-- Centered Month Picker Modal -->
+    <div id="monthSheet"
+      class="fixed inset-0 z-50 flex items-center justify-center hidden bg-black/75 p-6 opacity-0 backdrop-blur-sm transition-all duration-300">
+      <!-- Sheet Content container -->
+      <div
+        class="w-full max-w-[300px] scale-95 space-y-4 rounded-[26px] border border-white/[0.09] bg-[#111115]/95 p-4 shadow-[0_30px_90px_rgba(0,0,0,0.6)] transition-transform duration-300">
+        <div class="flex justify-between items-center pb-1">
+          <div class="flex items-center gap-2.5">
+            <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-[#C1FF72]/10 text-[#C1FF72]">
+              <span class="material-icons text-base">date_range</span>
+            </span>
+            <div>
+            <h3 class="text-sm font-extrabold text-white">Select month</h3>
+            </div>
+          </div>
+          <button onclick="closeMonthSheet()" aria-label="Close month selector"
+            class="w-7 h-7 rounded-full bg-white/[0.035] border border-white/[0.07] flex items-center justify-center">
+            <span class="material-icons text-sm text-gray-400">close</span>
+          </button>
+        </div>
+        <!-- 12-month choices -->
+        <div class="grid grid-cols-3 gap-1.5">
+          <button onclick="selectMonth('January 2026', this)" class="month-option rounded-xl border border-zinc-800 bg-zinc-900/50 py-2.5 text-[9px] font-bold text-gray-400 transition-all">Jan</button>
+          <button onclick="selectMonth('February 2026', this)" class="month-option rounded-xl border border-zinc-800 bg-zinc-900/50 py-2.5 text-[9px] font-bold text-gray-400 transition-all">Feb</button>
+          <button onclick="selectMonth('March 2026', this)" class="month-option rounded-xl border border-zinc-800 bg-zinc-900/50 py-2.5 text-[9px] font-bold text-gray-400 transition-all">Mar</button>
+          <button onclick="selectMonth('April 2026', this)" class="month-option rounded-xl border border-zinc-800 bg-zinc-900/50 py-2.5 text-[9px] font-bold text-gray-400 transition-all">Apr</button>
+          <button onclick="selectMonth('May 2026', this)" class="month-option rounded-xl border border-zinc-800 bg-zinc-900/50 py-2.5 text-[9px] font-bold text-gray-400 transition-all">May</button>
+          <button onclick="selectMonth('June 2026', this)" class="month-option rounded-xl border border-zinc-800 bg-zinc-900/50 py-2.5 text-[9px] font-bold text-gray-400 transition-all">Jun</button>
+          <button onclick="selectMonth('July 2026', this)" class="month-option rounded-xl border border-[#C1FF72] bg-[#C1FF72] py-2.5 text-[9px] font-black text-black shadow-md transition-all">Jul</button>
+          <button onclick="selectMonth('August 2026', this)" class="month-option rounded-xl border border-zinc-800 bg-zinc-900/50 py-2.5 text-[9px] font-bold text-gray-400 transition-all">Aug</button>
+          <button onclick="selectMonth('September 2026', this)" class="month-option rounded-xl border border-zinc-800 bg-zinc-900/50 py-2.5 text-[9px] font-bold text-gray-400 transition-all">Sep</button>
+          <button onclick="selectMonth('October 2026', this)" class="month-option rounded-xl border border-zinc-800 bg-zinc-900/50 py-2.5 text-[9px] font-bold text-gray-400 transition-all">Oct</button>
+          <button onclick="selectMonth('November 2026', this)" class="month-option rounded-xl border border-zinc-800 bg-zinc-900/50 py-2.5 text-[9px] font-bold text-gray-400 transition-all">Nov</button>
+          <button onclick="selectMonth('December 2026', this)" class="month-option rounded-xl border border-zinc-800 bg-zinc-900/50 py-2.5 text-[9px] font-bold text-gray-400 transition-all">Dec</button>
+        </div>
+      </div>
+    </div>
+    <!-- Expected Fund Amount Modal -->
+    <div id="expectedAmountModal"
+      class="fixed inset-0 z-50 hidden items-center justify-center bg-black/75 p-6 backdrop-blur-sm">
+      <form onsubmit="saveExpectedAmount(event)"
+        class="w-full max-w-xs space-y-4 rounded-[28px] border border-white/[0.09] bg-[#111115] p-5 shadow-2xl">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <p class="text-[9px] font-extrabold uppercase tracking-[0.16em] text-[#C1FF72]">Fund target</p>
+            <h3 class="mt-1 text-base font-extrabold text-white">Edit expected amount</h3>
+            <p id="expectedAmountMonthLabel" class="mt-1 text-[9px] font-semibold text-zinc-500">July 2026</p>
+          </div>
+          <button type="button" onclick="closeExpectedAmountModal()" aria-label="Close expected amount popup"
+            class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/[0.07] bg-white/[0.035] text-zinc-400">
+            <span class="material-icons text-sm">close</span>
+          </button>
+        </div>
+
+        <label class="block space-y-1.5">
+          <span class="text-[9px] font-extrabold uppercase tracking-wider text-zinc-500">Expected total (AED)</span>
+          <input id="expectedAmountInput" type="number" min="1" step="1" inputmode="decimal" required
+            class="w-full rounded-2xl border border-zinc-800 bg-zinc-900 px-4 py-3 text-sm font-extrabold text-white outline-none focus:border-[#C1FF72]/40" />
+        </label>
+        <p id="expectedAmountError" class="hidden text-[9px] font-bold text-red-400">Enter an amount greater than AED 0.</p>
+
+        <div class="grid grid-cols-2 gap-2">
+          <button type="button" onclick="closeExpectedAmountModal()"
+            class="rounded-2xl border border-white/[0.07] bg-white/[0.025] py-3 text-[9px] font-black uppercase tracking-wider text-zinc-400">Cancel</button>
+          <button type="submit"
+            class="rounded-2xl bg-[#C1FF72] py-3 text-[9px] font-black uppercase tracking-wider text-black active:scale-[0.98]">Save amount</button>
+        </div>
+      </form>
+    </div>
+    <!-- Loyalty Card Popup Modal -->
+    <div id="loyaltyModal"
+      class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-6 hidden opacity-0 transition-opacity duration-300">
+      <div
+        class="w-full max-w-sm bg-gradient-to-b from-zinc-800 to-black border border-zinc-800 rounded-[32px] p-6 space-y-4 shadow-2xl relative scale-95 transition-transform duration-300">
+        <button onclick="closeLoyaltyModal()"
+          class="absolute top-4 right-4 w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center">
+          <span class="material-icons text-sm text-gray-400">close</span>
+        </button>
+        <div class="text-center pt-2">
+          <span class="material-icons text-amber-500 text-4xl">stars</span>
+          <h3 class="text-base font-extrabold text-white mt-1">My Loyalty Stamp Card</h3>
+          <p class="text-[10px] text-gray-500 font-medium">Get 8 stamps, win 1 full premium lunchbox free! 🍱</p>
+        </div>
+        <!-- Stamp Grid -->
+        <div class="grid grid-cols-4 gap-3 py-2">
+          <!-- Stamped 1 -->
+          <div
+            class="aspect-square bg-amber-500/10 border-2 border-amber-500 rounded-xl flex items-center justify-center text-amber-500">
+            <span class="material-icons text-lg">check_circle</span>
+          </div>
+          <!-- Stamped 2 -->
+          <div
+            class="aspect-square bg-amber-500/10 border-2 border-amber-500 rounded-xl flex items-center justify-center text-amber-500">
+            <span class="material-icons text-lg">check_circle</span>
+          </div>
+          <!-- Stamped 3 -->
+          <div
+            class="aspect-square bg-amber-500/10 border-2 border-amber-500 rounded-xl flex items-center justify-center text-amber-500">
+            <span class="material-icons text-lg">check_circle</span>
+          </div>
+          <!-- Stamped 4 -->
+          <div
+            class="aspect-square bg-amber-500/10 border-2 border-amber-500 rounded-xl flex items-center justify-center text-amber-500">
+            <span class="material-icons text-lg">check_circle</span>
+          </div>
+          <!-- Stamped 5 -->
+          <div
+            class="aspect-square bg-amber-500/10 border-2 border-amber-500 rounded-xl flex items-center justify-center text-amber-500">
+            <span class="material-icons text-lg">check_circle</span>
+          </div>
+          <!-- Empty 6 -->
+          <div
+            class="aspect-square bg-zinc-950 border border-zinc-800 rounded-xl flex items-center justify-center text-gray-600 font-black">
+            6
+          </div>
+          <!-- Empty 7 -->
+          <div
+            class="aspect-square bg-zinc-950 border border-zinc-800 rounded-xl flex items-center justify-center text-gray-600 font-black">
+            7
+          </div>
+          <!-- Empty 8 -->
+          <div
+            class="aspect-square bg-zinc-950 border border-zinc-800 rounded-xl flex items-center justify-center text-gray-600 font-black">
+            8
+          </div>
+        </div>
+        <div class="bg-zinc-900 p-3 rounded-xl border border-zinc-800 text-center">
+          <p class="text-[11px] font-bold text-[#C1FF72]">5/8 STAMPS COLLECTED!</p>
+        </div>
+      </div>
+    </div>
+    <!-- Drive-In Custom Order Modal -->
+    <div id="driveInModal"
+      class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-6 hidden opacity-0 transition-opacity duration-300">
+      <div
+        class="w-full max-w-sm bg-gradient-to-b from-zinc-800 to-black border border-zinc-800 rounded-[32px] p-6 space-y-4 shadow-2xl relative scale-95 transition-transform duration-300">
+        <button onclick="closeDriveInModal()"
+          class="absolute top-4 right-4 w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center">
+          <span class="material-icons text-sm text-gray-400">close</span>
+        </button>
+        <div class="pt-2">
+          <div class="flex items-center gap-2">
+            <span class="material-icons text-sky-500 text-2xl">directions_car</span>
+            <h3 class="text-base font-extrabold text-white">Car Drive-In Setup</h3>
+          </div>
+          <p class="text-[10px] text-gray-500 font-medium mt-1">Car mein baithe-bhiathe deliver karwayein. No delivery
+            fee!
+          </p>
+        </div>
+        <!-- Inputs -->
+        <div class="space-y-3">
+          <div class="space-y-1">
+            <label class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Car Model & Number</label>
+            <input type="text" placeholder="PB-10 CD-1234 (Thar/Swift)"
+              class="w-full bg-zinc-950 border border-zinc-800 rounded-xl py-3 px-4 text-xs font-semibold focus:border-[#C1FF72] outline-none" />
+          </div>
+          <div class="space-y-1">
+            <label class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Select Parking Bay</label>
+            <div class="grid grid-cols-3 gap-2">
+              <button onclick="setParkingBay(this)"
+                class="bg-zinc-950 border border-zinc-800 text-xs py-2 rounded-lg text-gray-400 hover:text-white transition-all font-bold">Bay
+                01</button>
+              <button onclick="setParkingBay(this)"
+                class="bg-zinc-950 border border-zinc-800 text-xs py-2 rounded-lg text-gray-400 hover:text-white transition-all font-bold">Bay
+                02</button>
+              <button onclick="setParkingBay(this)"
+                class="bg-[#C1FF72] text-black border border-[#C1FF72] text-xs py-2 rounded-lg transition-all font-black">Bay
+                03</button>
+            </div>
+          </div>
+        </div>
+        <button onclick="showNotification('Drive-In Spot Set Successfully! 🚗')"
+          class="w-full bg-[#C1FF72] text-black font-extrabold py-3.5 rounded-xl text-xs uppercase tracking-wider transition-all">
+          Confirm Car Spot
+        </button>
+      </div>
+    </div>
+  </div>
+  <!-- 3. INTERACTIVE SLIDEOUT SIDEBAR DRAWER (Glassmorphism & Search) -->
+  <!-- Overlay backdrop -->
+  <div id="sidebarBackdrop" class="absolute inset-0 bg-black/80 z-40 hidden opacity-0 transition-opacity duration-300">
+  </div>
+  <!-- Redesigned Premium Sidebar Panel -->
+  <div id="sidebarMenu"
+    class="absolute inset-y-0 left-0 w-80 bg-[#090A0E]/95 border-r border-white/[0.06] backdrop-blur-2xl z-50 transform -translate-x-full transition-transform duration-500 ease-out flex flex-col justify-between p-6 overflow-y-auto no-scrollbar">
+    <div class="space-y-5">
+      <!-- Sidebar Profile & Close Header -->
+      <div class="flex justify-between items-center pb-4 border-b border-white/[0.04]">
+        <div class="flex items-center gap-3">
+          <div id="budgetIQSidebarAvatar"
+            class="w-10 h-10 bg-[#C1FF72] text-black text-sm font-black rounded-full flex items-center justify-center">
+            A
+          </div>
+          <div>
+            <h4 id="budgetIQSidebarUser" class="text-xs font-extrabold text-white">Admin ⚡</h4>
+            <p class="text-[9px] text-gray-500 font-semibold">BudgetIQ Workspace</p>
+          </div>
+        </div>
+        <!-- Styled Close Button -->
+        <button id="closeSidebarBtn"
+          class="w-8 h-8 rounded-full bg-white/[0.03] border border-white/[0.08] flex items-center justify-center text-gray-400 hover:text-white transition-all">
+          <span class="material-icons text-sm">close</span>
+        </button>
+      </div>
+      <!-- NEW: Live Screen Search Box (UX upgrade) -->
+      <div
+        class="flex bg-white/[0.03] border border-white/[0.06] focus-within:border-[#C1FF72]/40 rounded-xl p-1 transition-all">
+        <span class="material-icons text-gray-500 text-sm px-2 flex items-center">search</span>
+        <input id="screenSearch" onkeyup="searchScreens()" type="text" placeholder="Search"
+          class="bg-transparent w-full outline-none py-2 text-[10px] font-bold uppercase tracking-wider placeholder-gray-600 text-white" />
+      </div>
+      <!-- CATEGORIZED DIRECTORY -->
+      <div id="linksContainer" class="space-y-5 overflow-y-auto no-scrollbar pr-1 max-h-[440px]">
+        <!-- Category 2: User Core App -->
+        <div class="category-sec space-y-2">
+          <h4 class="text-[8px] font-black uppercase tracking-widest text-[#C1FF72]">User Core App</h4>
+          <div class="space-y-1 text-xs">
+            <a href="./dashboard.html"
+              class="nav-link-item flex items-center justify-between py-2 px-3 text-gray-400 hover:text-[#C1FF72] rounded-xl hover:bg-white/[0.03] transition-all font-semibold group">
+              <span class="flex items-center gap-2 group-hover:translate-x-1.5 transition-transform"><span
+                  class="material-icons text-sm text-gray-500 group-hover:text-[#C1FF72]">home</span> Home
+                Dashboard</span>
+            </a>
+          </div>
+        </div>
+        <!-- Category 4: Profile and history -->
+        <div class="category-sec space-y-2">
+          <h4 class="text-[8px] font-black uppercase tracking-widest text-purple-400">Profile &amp; History</h4>
+          <div class="space-y-1 text-xs">
+            <a href="./profile.html"
+              class="nav-link-item flex items-center justify-between py-2 px-3 text-gray-400 hover:text-[#C1FF72] rounded-xl hover:bg-white/[0.03] transition-all font-semibold group">
+              <span class="flex items-center gap-2 group-hover:translate-x-1.5 transition-transform"><span
+                  class="material-icons text-sm text-gray-500 group-hover:text-[#C1FF72]">person</span> Profile</span>
+            </a>
+            <a href="./history.html"
+              class="nav-link-item flex items-center justify-between py-2 px-3 text-gray-400 hover:text-[#C1FF72] rounded-xl hover:bg-white/[0.03] transition-all font-semibold group">
+              <span class="flex items-center gap-2 group-hover:translate-x-1.5 transition-transform"><span
+                  class="material-icons text-sm text-gray-500 group-hover:text-[#C1FF72]">history</span> History</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Sidebar Footer -->
+    <div
+      class="pt-4 border-t border-white/[0.04] flex items-center justify-between text-[10px] text-gray-500 font-semibold uppercase tracking-wider">
+      <span id="budgetIQSidebarFooterUser">Admin</span>
+      <span>v1.0.7 ⚡</span>
+    </div>
+  </div>
+</body>
+
+</html>
