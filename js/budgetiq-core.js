@@ -4099,12 +4099,10 @@ function renderBudgetIQSettingsUsers() {
   const count = document.getElementById('settingsUserCount');
   if (!list) return;
   const users = readBudgetIQWorkspaceUsers();
-  const managedUsers = users.filter((user) => user.id !== 'admin');
   const passwordRecords = getSplashPasswordRecords();
-  if (count) count.textContent = String(managedUsers.filter((user) => user.active).length);
-  document.getElementById('settingsUsersSection')?.classList.toggle('hidden', managedUsers.length === 0);
+  if (count) count.textContent = String(users.filter((user) => user.active).length);
 
-  list.innerHTML = managedUsers.map((user) => {
+  list.innerHTML = users.map((user) => {
     const encodedId = encodeURIComponent(user.id);
     const initials = user.name.split(/\s+/).filter(Boolean).map((part) => part[0]).join('').slice(0, 2).toUpperCase() || 'U';
     const roleLabel = BUDGETIQ_ROLE_LABELS[user.role] || BUDGETIQ_ROLE_LABELS.member;
@@ -4126,7 +4124,7 @@ function renderBudgetIQSettingsUsers() {
           </div>
           <div class="flex shrink-0 gap-1.5">
             <button type="button" onclick="resetBudgetIQWorkspaceUserPassword(decodeURIComponent('${encodedId}'))" aria-label="Reset ${escapeBudgetIQHtml(user.name)} password" class="flex h-8 w-8 items-center justify-center rounded-xl border border-white/[0.07] bg-black/20 text-zinc-500 active:scale-95"><span class="material-icons text-sm">${passwordReady ? 'lock_reset' : 'lock_open'}</span></button>
-            <button type="button" onclick="openBudgetIQWorkspaceUserEditor(decodeURIComponent('${encodedId}'))" aria-label="Edit ${escapeBudgetIQHtml(user.name)}" class="flex h-8 w-8 items-center justify-center rounded-xl border border-white/[0.07] bg-black/20 text-zinc-500 active:scale-95"><span class="material-icons text-sm">tune</span></button>
+            ${user.id === 'admin' ? '' : `<button type="button" onclick="openBudgetIQWorkspaceUserEditor(decodeURIComponent('${encodedId}'))" aria-label="Edit ${escapeBudgetIQHtml(user.name)}" class="flex h-8 w-8 items-center justify-center rounded-xl border border-white/[0.07] bg-black/20 text-zinc-500 active:scale-95"><span class="material-icons text-sm">tune</span></button>`}
           </div>
         </div>
         <div class="mt-3 flex items-center justify-between border-t border-white/[0.05] pt-3 text-[8px] font-bold">
@@ -4304,7 +4302,7 @@ if (document.readyState === 'loading') {
  * ------------------------------------------------------------------ */
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", function () {
-    navigator.serviceWorker.register("sw.js?v=66").catch(function (err) {
+    navigator.serviceWorker.register("sw.js?v=67").catch(function (err) {
       console.warn("[PWA] Service worker registration failed:", err);
     });
   });
