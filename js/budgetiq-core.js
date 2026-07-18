@@ -4099,10 +4099,12 @@ function renderBudgetIQSettingsUsers() {
   const count = document.getElementById('settingsUserCount');
   if (!list) return;
   const users = readBudgetIQWorkspaceUsers();
+  const managedUsers = users.filter((user) => user.id !== 'admin');
   const passwordRecords = getSplashPasswordRecords();
-  if (count) count.textContent = String(users.filter((user) => user.active).length);
+  if (count) count.textContent = String(managedUsers.filter((user) => user.active).length);
+  document.getElementById('settingsUsersSection')?.classList.toggle('hidden', managedUsers.length === 0);
 
-  list.innerHTML = users.map((user) => {
+  list.innerHTML = managedUsers.map((user) => {
     const encodedId = encodeURIComponent(user.id);
     const initials = user.name.split(/\s+/).filter(Boolean).map((part) => part[0]).join('').slice(0, 2).toUpperCase() || 'U';
     const roleLabel = BUDGETIQ_ROLE_LABELS[user.role] || BUDGETIQ_ROLE_LABELS.member;
@@ -4117,7 +4119,6 @@ function renderBudgetIQSettingsUsers() {
             <div class="min-w-0">
               <div class="flex items-center gap-2">
                 <h3 class="truncate text-xs font-extrabold text-white">${escapeBudgetIQHtml(user.name)}</h3>
-                ${user.id === 'admin' ? '<span class="rounded-full bg-[#C1FF72]/10 px-2 py-0.5 text-[7px] font-black uppercase text-[#C1FF72]">Owner</span>' : ''}
               </div>
               <p class="mt-0.5 text-[8px] font-bold uppercase tracking-wider ${statusClass}">${user.active ? roleLabel : 'Access paused'}</p>
               <p class="mt-1 truncate text-[8px] font-semibold text-zinc-600">${permissions.length ? escapeBudgetIQHtml(permissions.join(' • ')) : 'No workspace permissions'}</p>
@@ -4125,7 +4126,7 @@ function renderBudgetIQSettingsUsers() {
           </div>
           <div class="flex shrink-0 gap-1.5">
             <button type="button" onclick="resetBudgetIQWorkspaceUserPassword(decodeURIComponent('${encodedId}'))" aria-label="Reset ${escapeBudgetIQHtml(user.name)} password" class="flex h-8 w-8 items-center justify-center rounded-xl border border-white/[0.07] bg-black/20 text-zinc-500 active:scale-95"><span class="material-icons text-sm">${passwordReady ? 'lock_reset' : 'lock_open'}</span></button>
-            ${user.id === 'admin' ? '' : `<button type="button" onclick="openBudgetIQWorkspaceUserEditor(decodeURIComponent('${encodedId}'))" aria-label="Edit ${escapeBudgetIQHtml(user.name)}" class="flex h-8 w-8 items-center justify-center rounded-xl border border-white/[0.07] bg-black/20 text-zinc-500 active:scale-95"><span class="material-icons text-sm">tune</span></button>`}
+            <button type="button" onclick="openBudgetIQWorkspaceUserEditor(decodeURIComponent('${encodedId}'))" aria-label="Edit ${escapeBudgetIQHtml(user.name)}" class="flex h-8 w-8 items-center justify-center rounded-xl border border-white/[0.07] bg-black/20 text-zinc-500 active:scale-95"><span class="material-icons text-sm">tune</span></button>
           </div>
         </div>
         <div class="mt-3 flex items-center justify-between border-t border-white/[0.05] pt-3 text-[8px] font-bold">
@@ -4303,7 +4304,7 @@ if (document.readyState === 'loading') {
  * ------------------------------------------------------------------ */
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", function () {
-    navigator.serviceWorker.register("sw.js?v=65").catch(function (err) {
+    navigator.serviceWorker.register("sw.js?v=66").catch(function (err) {
       console.warn("[PWA] Service worker registration failed:", err);
     });
   });
