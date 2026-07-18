@@ -18,7 +18,7 @@
   <link rel="stylesheet" href="css/tailwind.min.css?v=1">
   <link rel="preload" href="fonts/material-icons.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="css/style.css?v=4">
-  <script defer src="js/budgetiq-core.js?v=59"></script>
+  <script defer src="js/budgetiq-core.js?v=63"></script>
 </head>
 
 <body class="bg-[#0A0A0C] min-h-screen flex items-center justify-center relative">
@@ -447,6 +447,12 @@
               <span class="flex items-center gap-2 group-hover:translate-x-1.5 transition-transform"><span
                   class="material-icons text-sm text-gray-500 group-hover:text-[#C1FF72]">history</span> History</span>
             </a>
+            <a href="./notifications.html"
+              class="nav-link-item flex items-center justify-between py-2 px-3 text-gray-400 hover:text-[#C1FF72] rounded-xl hover:bg-white/[0.03] transition-all font-semibold group">
+              <span class="flex items-center gap-2 group-hover:translate-x-1.5 transition-transform"><span
+                  class="material-icons text-sm text-gray-500 group-hover:text-[#C1FF72]">notifications</span> Notifications</span>
+              <span data-budgetiq-notification-badge class="hidden min-w-[18px] rounded-full bg-red-500 px-1.5 py-0.5 text-center text-[7px] font-black text-white">0</span>
+            </a>
           </div>
         </div>
       </div>
@@ -455,7 +461,7 @@
     <div
       class="pt-4 border-t border-white/[0.04] flex items-center justify-between text-[10px] text-gray-500 font-semibold uppercase tracking-wider">
       <span id="budgetIQSidebarFooterUser">Admin</span>
-      <span>v1.0.7 ⚡</span>
+      <span>v1.0.8 ⚡</span>
     </div>
   </div>
 </body>

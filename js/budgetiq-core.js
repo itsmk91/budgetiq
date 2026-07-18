@@ -891,6 +891,50 @@ function getPurchaseReportFilename(extension) {
   return `budgetiq-purchase-report-${date}.${extension}`;
 }
 
+function createBudgetIQPdfViewer(reportWindow) {
+  const returnUrl = window.location.href;
+
+  return {
+    style: `
+      body{padding-top:calc(46px + env(safe-area-inset-top,0px))}.pdf-app-toolbar{position:fixed;z-index:9999;top:calc(6px + env(safe-area-inset-top,0px));left:8px;display:flex}.pdf-app-back{display:inline-flex;min-height:34px;align-items:center;gap:6px;padding:0 10px;border:1px solid rgba(193,255,114,.32);border-radius:11px;background:rgba(26,28,33,.94);box-shadow:0 2px 10px rgba(0,0,0,.24);color:#fff;font:800 11px/1 Arial,Helvetica,sans-serif;letter-spacing:.05px;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);-webkit-tap-highlight-color:transparent;touch-action:manipulation}.pdf-app-back:active{transform:scale(.97);background:#30333a}.pdf-app-back-arrow{color:#C1FF72;font-size:17px;line-height:1}@media print{body{padding-top:0}.pdf-app-toolbar{display:none!important}}
+    `,
+    toolbar: `
+      <nav class="pdf-app-toolbar" aria-label="PDF viewer controls">
+        <button class="pdf-app-back" id="budgetIQPdfBackButton" type="button">
+          <span class="pdf-app-back-arrow" aria-hidden="true">&#8592;</span>
+          <span>Back to BudgetIQ</span>
+        </button>
+      </nav>
+    `,
+    activate() {
+      const backButton = reportWindow.document.getElementById('budgetIQPdfBackButton');
+      if (!backButton) return;
+
+      backButton.addEventListener('click', () => {
+        try {
+          if (reportWindow.opener && !reportWindow.opener.closed) reportWindow.opener.focus();
+        } catch (error) {
+          // The fallback below still returns this standalone window to the app.
+        }
+
+        try {
+          reportWindow.close();
+        } catch (error) {
+          // iOS standalone mode may refuse to close its top-level window.
+        }
+
+        setTimeout(() => {
+          try {
+            if (!reportWindow.closed) reportWindow.location.replace(returnUrl);
+          } catch (error) {
+            // The original app window is already active or the report was closed.
+          }
+        }, 120);
+      });
+    }
+  };
+}
+
 function exportLegacyPurchaseReportPDF() {
   const rows = getPurchaseReportRows();
   const reportNote = rows.find((row) => String(row.note || '').trim())?.note?.trim() || '';
@@ -900,6 +944,7 @@ function exportLegacyPurchaseReportPDF() {
     alert('Allow popups to create the PDF report.');
     return;
   }
+  const pdfViewer = createBudgetIQPdfViewer(reportWindow);
   const now = new Date();
   const generatedDate = now.toLocaleDateString('en-GB', {
     day: '2-digit',
@@ -1003,9 +1048,10 @@ function exportLegacyPurchaseReportPDF() {
 
   reportWindow.document.write(`<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${getPurchaseReportFilename('pdf')}</title>
     <style>
-      *{box-sizing:border-box}html,body{margin:0;padding:0}body{background:#d9d9d9;color:#343434;font-family:Arial,Helvetica,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}.sheet{position:relative;width:210mm;min-height:297mm;margin:12mm auto;background:#fff;overflow:hidden;page-break-after:always;box-shadow:0 5mm 18mm rgba(0,0,0,.18)}.sheet:last-child{page-break-after:auto}.top-corner{position:absolute;z-index:1;top:0;right:0;width:25mm;height:20mm;background:linear-gradient(135deg,#efad22,#dc8617);clip-path:polygon(48% 0,100% 0,100% 100%)}.top-arc,.bottom-arc{position:absolute;border-style:solid;border-radius:50%;pointer-events:none}.top-arc{z-index:0;transform:rotate(-10deg)}.arc-a{width:145mm;height:57mm;top:-41mm;left:-43mm;border-width:13mm;border-color:#e6a31c}.arc-b{width:108mm;height:48mm;top:-35mm;left:30mm;border-width:10mm;border-color:#d98318}.arc-c{width:158mm;height:58mm;top:-44mm;left:-8mm;border-width:2mm;border-color:#555 transparent transparent transparent}.bottom-corner{position:absolute;z-index:1;bottom:0;left:0;width:23mm;height:18mm;background:#e7991b;clip-path:polygon(0 0,0 100%,100% 100%)}.bottom-arc{z-index:0;transform:rotate(-14deg)}.arc-d{width:155mm;height:65mm;bottom:-46mm;right:-39mm;border-width:14mm;border-color:#e7a51e}.arc-e{width:112mm;height:52mm;bottom:-36mm;right:27mm;border-width:10mm;border-color:#d98518}.arc-f{width:165mm;height:62mm;bottom:-45mm;right:-8mm;border-width:2mm;border-color:#4e4e50 transparent transparent transparent}.brand{position:absolute;z-index:2;top:35mm;left:19mm;display:flex;align-items:center;gap:3mm}.brand-mark{display:flex;width:13mm;height:13mm;align-items:center;justify-content:center;border:1.2mm solid #e69e1b;border-radius:50%;color:#e69e1b;font-size:7mm;font-weight:900}.brand-name{color:#363638;font-size:6mm;font-weight:900;letter-spacing:.5mm;line-height:1}.brand-name span{color:#e69e1b}.brand-tagline{margin-top:1.4mm;color:#858585;font-size:1.8mm;font-weight:700;letter-spacing:.52mm}.brand-rule{position:absolute;z-index:2;top:53mm;left:19mm;width:172mm;height:.7mm;background:linear-gradient(90deg,#e7a31d 0,#e7a31d 73%,#555 73%,#555 100%)}.report-meta{position:absolute;z-index:2;top:65mm;bottom:42mm;left:19mm;display:flex;width:36mm;flex-direction:column;padding:8mm 6mm 5mm 0;border-right:.45mm solid #c6c6c6}.report-meta:before,.report-meta:after{content:"";position:absolute;right:-1.55mm;width:2.7mm;height:2.7mm;border:.6mm solid #e39a1a;border-radius:50%;background:#fff}.report-meta:before{top:-1.2mm}.report-meta:after{bottom:-1.2mm}.meta-block{margin-bottom:11mm}.meta-label{display:block;margin-bottom:2mm;color:#e09619;font-size:2.2mm;font-weight:900;letter-spacing:.45mm}.meta-block strong{display:block;color:#414143;font-size:3.5mm;line-height:1.45}.meta-block small{display:block;margin-top:1mm;color:#8b8b8c;font-size:2.5mm;line-height:1.55}.total-side{margin-top:auto}.total-side strong{color:#d78117;font-size:4.1mm}.report-content{position:relative;z-index:2;margin:0 18mm 0 64mm;padding-top:66mm;min-height:255mm}.report-heading{display:flex;align-items:flex-end;justify-content:space-between}.eyebrow{display:block;margin-bottom:1.5mm;color:#df941a;font-size:2.4mm;font-weight:900;letter-spacing:.65mm}.report-heading h1{margin:0;color:#353537;font-size:9mm;line-height:1;font-weight:900;letter-spacing:-.3mm}.report-badge{border:.45mm solid #e3a026;border-radius:6mm;padding:2mm 3.5mm;color:#d88917;font-size:2.2mm;font-weight:900;letter-spacing:.4mm}.intro{max-width:110mm;margin:4mm 0 8mm;color:#777;font-size:3mm;line-height:1.55}table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:2.75mm}.col-number{width:8%}.col-purchase{width:29%}.col-buyer{width:22%}.col-category{width:20%}.col-amount{width:21%}th{padding:3mm 1.5mm;border-top:.5mm solid #e29a1b;border-bottom:.5mm solid #e29a1b;color:#d88817;font-size:2.1mm;font-weight:900;letter-spacing:.32mm;text-align:left;text-transform:uppercase}td{height:13mm;padding:2.4mm 1.5mm;border-bottom:.25mm solid #dedede;color:#4d4d4f;vertical-align:middle;overflow-wrap:anywhere}td.number{color:#b1b1b1;font-weight:700}td strong{display:block;color:#38383a;font-size:2.8mm;line-height:1.25}.record-detail{display:block;margin-top:.7mm;color:#929292;font-size:2.2mm;line-height:1.2}.category{display:inline-block;margin:0;padding:1.2mm 2mm;border-radius:4mm;background:#f9eedb;color:#c87813;font-size:2.1mm;font-weight:800}.amount{text-align:right;font-weight:900;white-space:nowrap}.empty td{height:35mm;color:#999;text-align:center;font-style:italic}.report-note-card{margin-top:6mm;padding:4.5mm 5mm;border-left:1.3mm solid #e39a1a;border-radius:0 2.5mm 2.5mm 0;background:#fff7ea}.report-note-card p{margin:0;color:#644b2f;font-size:3mm;font-weight:800;line-height:1.45;white-space:pre-wrap}.grand-total{display:flex;align-items:center;justify-content:space-between;margin:7mm 0 0 auto;padding:4mm 5mm;width:76mm;border-left:1.3mm solid #e39a1a;background:#f6f3ee}.grand-total span{color:#4b4b4d;font-size:3.2mm;font-weight:800}.grand-total small{display:block;margin-bottom:1mm;color:#d78a16;font-size:1.9mm;letter-spacing:.35mm}.grand-total strong{color:#d47f15;font-size:5mm}footer{position:absolute;z-index:2;right:19mm;bottom:25mm;left:64mm;display:flex;justify-content:space-between;color:#777;font-size:2.2mm;letter-spacing:.18mm}footer strong{color:#4d4d4f}@page{size:A4;margin:0}@media print{body{background:#fff}.sheet{margin:0;box-shadow:none;width:210mm;height:297mm;min-height:297mm}}
-    </style></head><body>${pagesHtml}</body></html>`);
+      *{box-sizing:border-box}html,body{margin:0;padding:0}body{background:#d9d9d9;color:#343434;font-family:Arial,Helvetica,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}.sheet{position:relative;width:210mm;min-height:297mm;margin:12mm auto;background:#fff;overflow:hidden;page-break-after:always;box-shadow:0 5mm 18mm rgba(0,0,0,.18)}.sheet:last-child{page-break-after:auto}.top-corner{position:absolute;z-index:1;top:0;right:0;width:25mm;height:20mm;background:linear-gradient(135deg,#efad22,#dc8617);clip-path:polygon(48% 0,100% 0,100% 100%)}.top-arc,.bottom-arc{position:absolute;border-style:solid;border-radius:50%;pointer-events:none}.top-arc{z-index:0;transform:rotate(-10deg)}.arc-a{width:145mm;height:57mm;top:-41mm;left:-43mm;border-width:13mm;border-color:#e6a31c}.arc-b{width:108mm;height:48mm;top:-35mm;left:30mm;border-width:10mm;border-color:#d98318}.arc-c{width:158mm;height:58mm;top:-44mm;left:-8mm;border-width:2mm;border-color:#555 transparent transparent transparent}.bottom-corner{position:absolute;z-index:1;bottom:0;left:0;width:23mm;height:18mm;background:#e7991b;clip-path:polygon(0 0,0 100%,100% 100%)}.bottom-arc{z-index:0;transform:rotate(-14deg)}.arc-d{width:155mm;height:65mm;bottom:-46mm;right:-39mm;border-width:14mm;border-color:#e7a51e}.arc-e{width:112mm;height:52mm;bottom:-36mm;right:27mm;border-width:10mm;border-color:#d98518}.arc-f{width:165mm;height:62mm;bottom:-45mm;right:-8mm;border-width:2mm;border-color:#4e4e50 transparent transparent transparent}.brand{position:absolute;z-index:2;top:35mm;left:19mm;display:flex;align-items:center;gap:3mm}.brand-mark{display:flex;width:13mm;height:13mm;align-items:center;justify-content:center;border:1.2mm solid #e69e1b;border-radius:50%;color:#e69e1b;font-size:7mm;font-weight:900}.brand-name{color:#363638;font-size:6mm;font-weight:900;letter-spacing:.5mm;line-height:1}.brand-name span{color:#e69e1b}.brand-tagline{margin-top:1.4mm;color:#858585;font-size:1.8mm;font-weight:700;letter-spacing:.52mm}.brand-rule{position:absolute;z-index:2;top:53mm;left:19mm;width:172mm;height:.7mm;background:linear-gradient(90deg,#e7a31d 0,#e7a31d 73%,#555 73%,#555 100%)}.report-meta{position:absolute;z-index:2;top:65mm;bottom:42mm;left:19mm;display:flex;width:36mm;flex-direction:column;padding:8mm 6mm 5mm 0;border-right:.45mm solid #c6c6c6}.report-meta:before,.report-meta:after{content:"";position:absolute;right:-1.55mm;width:2.7mm;height:2.7mm;border:.6mm solid #e39a1a;border-radius:50%;background:#fff}.report-meta:before{top:-1.2mm}.report-meta:after{bottom:-1.2mm}.meta-block{margin-bottom:11mm}.meta-label{display:block;margin-bottom:2mm;color:#e09619;font-size:2.2mm;font-weight:900;letter-spacing:.45mm}.meta-block strong{display:block;color:#414143;font-size:3.5mm;line-height:1.45}.meta-block small{display:block;margin-top:1mm;color:#8b8b8c;font-size:2.5mm;line-height:1.55}.total-side{margin-top:auto}.total-side strong{color:#d78117;font-size:4.1mm}.report-content{position:relative;z-index:2;margin:0 18mm 0 64mm;padding-top:66mm;min-height:255mm}.report-heading{display:flex;align-items:flex-end;justify-content:space-between}.eyebrow{display:block;margin-bottom:1.5mm;color:#df941a;font-size:2.4mm;font-weight:900;letter-spacing:.65mm}.report-heading h1{margin:0;color:#353537;font-size:9mm;line-height:1;font-weight:900;letter-spacing:-.3mm}.report-badge{border:.45mm solid #e3a026;border-radius:6mm;padding:2mm 3.5mm;color:#d88917;font-size:2.2mm;font-weight:900;letter-spacing:.4mm}.intro{max-width:110mm;margin:4mm 0 8mm;color:#777;font-size:3mm;line-height:1.55}table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:2.75mm}.col-number{width:8%}.col-purchase{width:29%}.col-buyer{width:22%}.col-category{width:20%}.col-amount{width:21%}th{padding:3mm 1.5mm;border-top:.5mm solid #e29a1b;border-bottom:.5mm solid #e29a1b;color:#d88817;font-size:2.1mm;font-weight:900;letter-spacing:.32mm;text-align:left;text-transform:uppercase}td{height:13mm;padding:2.4mm 1.5mm;border-bottom:.25mm solid #dedede;color:#4d4d4f;vertical-align:middle;overflow-wrap:anywhere}td.number{color:#b1b1b1;font-weight:700}td strong{display:block;color:#38383a;font-size:2.8mm;line-height:1.25}.record-detail{display:block;margin-top:.7mm;color:#929292;font-size:2.2mm;line-height:1.2}.category{display:inline-block;margin:0;padding:1.2mm 2mm;border-radius:4mm;background:#f9eedb;color:#c87813;font-size:2.1mm;font-weight:800}.amount{text-align:right;font-weight:900;white-space:nowrap}.empty td{height:35mm;color:#999;text-align:center;font-style:italic}.report-note-card{margin-top:6mm;padding:4.5mm 5mm;border-left:1.3mm solid #e39a1a;border-radius:0 2.5mm 2.5mm 0;background:#fff7ea}.report-note-card p{margin:0;color:#644b2f;font-size:3mm;font-weight:800;line-height:1.45;white-space:pre-wrap}.grand-total{display:flex;align-items:center;justify-content:space-between;margin:7mm 0 0 auto;padding:4mm 5mm;width:76mm;border-left:1.3mm solid #e39a1a;background:#f6f3ee}.grand-total span{color:#4b4b4d;font-size:3.2mm;font-weight:800}.grand-total small{display:block;margin-bottom:1mm;color:#d78a16;font-size:1.9mm;letter-spacing:.35mm}.grand-total strong{color:#d47f15;font-size:5mm}footer{position:absolute;z-index:2;right:19mm;bottom:25mm;left:64mm;display:flex;justify-content:space-between;color:#777;font-size:2.2mm;letter-spacing:.18mm}footer strong{color:#4d4d4f}${pdfViewer.style}@page{size:A4;margin:0}@media print{body{background:#fff}.sheet{margin:0;box-shadow:none;width:210mm;height:297mm;min-height:297mm}}
+    </style></head><body>${pdfViewer.toolbar}${pagesHtml}</body></html>`);
   reportWindow.document.close();
+  pdfViewer.activate();
   closePurchaseShareModal();
   setTimeout(() => {
     reportWindow.focus();
@@ -1104,6 +1150,7 @@ function triggerSaveExpense() {
     id: `expense-${Date.now()}`,
     createdAt: new Date().toISOString(),
     month: 'July 2026',
+    actor: getBudgetIQCurrentActorName(),
     buyers,
     note: expenseNote,
     amount: total,
@@ -1124,6 +1171,7 @@ function triggerSaveExpense() {
     const expenses = Array.isArray(savedExpenses) ? savedExpenses : [];
     expenses.push(expenseRecord);
     localStorage.setItem(BUDGETIQ_EXPENSES_KEY, JSON.stringify(expenses));
+    renderBudgetIQNotificationBadges();
   } catch (error) {
     alert('The expense was not saved. Your draft is still safe. Export a backup or remove large receipt pictures, then try again.');
     saveBudgetIQExpenseDraft();
@@ -1506,6 +1554,8 @@ const MEMBER_PAYMENTS_KEY = 'budgetiq-member-payments';
 const MEMBER_MONTHLY_PAYMENTS_KEY = 'budgetiq-member-payments-by-month';
 const MEMBER_IDS_KEY = 'budgetiq-member-ids';
 const BUDGETIQ_CONTRIBUTION_ACTIVITY_KEY = 'budgetiq-contribution-activity';
+const BUDGETIQ_NOTIFICATION_EVENTS_KEY = 'budgetiq-notification-events';
+const BUDGETIQ_NOTIFICATION_READ_IDS_KEY = 'budgetiq-notification-read-ids';
 
 function readBudgetIQMonthlyPaymentRecords() {
   try {
@@ -1589,11 +1639,47 @@ function updateMemberPaymentSummary() {
   if (memberPaidCount) memberPaidCount.innerText = String(paid);
   if (memberUnpaidCount) memberUnpaidCount.innerText = String(unpaid);
   if (memberPaidProgress) memberPaidProgress.style.width = `${Math.round((paid / budgetIQMemberRows.length) * 100)}%`;
+  const contributionTypeLabel = document.getElementById('memberContributionTypeLabel');
   const contributionLabel = document.getElementById('memberContributionAmount');
   const collectedLabel = document.getElementById('memberCollectedAmount');
-  const contributionPerMember = readBudgetIQContributionPerMember();
-  if (contributionLabel) contributionLabel.textContent = formatBudgetIQAED(contributionPerMember);
-  if (collectedLabel) collectedLabel.textContent = formatBudgetIQAED(paid * contributionPerMember);
+  const groupPlan = readBudgetIQContributionGroupPlan();
+  const memberAmounts = budgetIQMemberRows.map((row) => readBudgetIQContributionForMember(row.dataset.memberId));
+  const assignedAmounts = memberAmounts.filter((amount) => amount > 0);
+  const collected = budgetIQMemberRows.reduce((total, row, index) => (
+    total + (row.dataset.status === 'paid' ? memberAmounts[index] : 0)
+  ), 0);
+
+  if (contributionTypeLabel) {
+    contributionTypeLabel.textContent = groupPlan
+      ? `${groupPlan.length} payment ${groupPlan.length === 1 ? 'group' : 'groups'}`
+      : 'Per member';
+  }
+  if (contributionLabel) {
+    if (groupPlan && assignedAmounts.length) {
+      const minimum = Math.min(...assignedAmounts);
+      const maximum = Math.max(...assignedAmounts);
+      contributionLabel.textContent = minimum === maximum
+        ? formatBudgetIQAED(minimum)
+        : `${formatBudgetIQAED(minimum)} – ${maximum.toLocaleString('en-US')}`;
+    } else {
+      contributionLabel.textContent = formatBudgetIQAED(readBudgetIQContributionPerMember());
+    }
+  }
+  if (collectedLabel) collectedLabel.textContent = formatBudgetIQAED(collected);
+
+  budgetIQMemberRows.forEach((row, index) => {
+    let amountLabel = row.querySelector('.member-contribution-amount');
+    if (!amountLabel) {
+      amountLabel = document.createElement('span');
+      amountLabel.className = 'member-contribution-amount shrink-0 rounded-lg border border-white/[0.06] bg-black/20 px-2 py-1 text-[8px] font-black text-zinc-500';
+      row.querySelector('.member-payment-toggle')?.before(amountLabel);
+    }
+    if (amountLabel) {
+      amountLabel.textContent = memberAmounts[index] > 0 ? formatBudgetIQAED(memberAmounts[index]) : 'Not set';
+      amountLabel.classList.toggle('text-zinc-500', memberAmounts[index] > 0);
+      amountLabel.classList.toggle('text-amber-400', memberAmounts[index] <= 0);
+    }
+  });
 }
 
 function saveBudgetIQMembers() {
@@ -1627,7 +1713,7 @@ function recordBudgetIQContributionActivity(memberId, memberName, paid) {
   try {
     const records = JSON.parse(localStorage.getItem(BUDGETIQ_CONTRIBUTION_ACTIVITY_KEY) || '[]');
     const activity = Array.isArray(records) ? records : [];
-    const contributionAmount = readBudgetIQContributionPerMember();
+    const contributionAmount = readBudgetIQContributionForMember(memberId);
     activity.push({
       id: `contribution-${Date.now()}-${memberId}`,
       createdAt: new Date().toISOString(),
@@ -1635,9 +1721,11 @@ function recordBudgetIQContributionActivity(memberId, memberName, paid) {
       memberId: String(memberId || ''),
       memberName: memberName || 'Member',
       amount: paid ? contributionAmount : -contributionAmount,
-      status: paid ? 'Paid' : 'Reversed'
+      status: paid ? 'Paid' : 'Reversed',
+      actor: getBudgetIQCurrentActorName()
     });
     localStorage.setItem(BUDGETIQ_CONTRIBUTION_ACTIVITY_KEY, JSON.stringify(activity));
+    renderBudgetIQNotificationBadges();
     return true;
   } catch (error) {
     triggerToast('Payment saved, but its history entry was not saved', 'warning', 'text-amber-400');
@@ -1744,6 +1832,12 @@ function saveNewMember() {
   updateMemberPaymentSummary();
   closeAddMemberModal();
   requestAnimationFrame(() => memberScrollList.scrollTo({ top: memberScrollList.scrollHeight, behavior: 'smooth' }));
+  recordBudgetIQNotificationEvent({
+    type: 'member',
+    title: `${name} added as a member`,
+    message: 'The shared fund member list was updated.',
+    icon: 'person_add'
+  });
   triggerToast(`${name} added`, 'person_add', 'text-[#C1FF72]');
 }
 
@@ -1751,6 +1845,11 @@ function toggleMemberPaid(button) {
   const row = button ? button.closest('.member-list-row') : null;
   if (!row) return;
   const willBePaid = row.dataset.status !== 'paid';
+  if (willBePaid && readBudgetIQContributionForMember(row.dataset.memberId) <= 0) {
+    triggerToast('Add this member to the monthly payment plan first', 'warning', 'text-amber-400');
+    openMemberContributionModal();
+    return;
+  }
   setMemberPaymentAppearance(row, willBePaid);
   if (!saveBudgetIQMembers()) {
     setMemberPaymentAppearance(row, !willBePaid);
@@ -1823,6 +1922,12 @@ function saveMemberRename() {
   }
   filterMemberRows();
   closeEditMemberModal();
+  recordBudgetIQNotificationEvent({
+    type: 'member',
+    title: `${previousName} renamed`,
+    message: `The member name was changed to ${newName}.`,
+    icon: 'manage_accounts'
+  });
   triggerToast(`${newName} saved`, 'check_circle', 'text-[#C1FF72]');
 }
 
@@ -1832,6 +1937,7 @@ const BUDGETIQ_CONTRIBUTION_PER_MEMBER = 1000;
 const BUDGETIQ_FIXED_EXPENSES = 0;
 const BUDGETIQ_MONTHLY_EXPECTED_KEY = 'budgetiq-monthly-expected-amounts';
 const BUDGETIQ_MONTHLY_CONTRIBUTION_KEY = 'budgetiq-monthly-contribution-per-member';
+const BUDGETIQ_MONTHLY_CONTRIBUTION_GROUPS_KEY = 'budgetiq-monthly-contribution-groups';
 const BUDGETIQ_USER_LABELS = {
   admin: 'Admin',
   'user-1': 'User 1',
@@ -1889,7 +1995,86 @@ function readBudgetIQMonthlyContributionAmounts() {
   }
 }
 
+function readBudgetIQMonthlyContributionGroups() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(BUDGETIQ_MONTHLY_CONTRIBUTION_GROUPS_KEY) || '{}');
+    return saved && typeof saved === 'object' && !Array.isArray(saved) ? saved : {};
+  } catch (error) {
+    return {};
+  }
+}
+
+function readBudgetIQContributionGroupPlan(month = getBudgetIQCurrentMonthName()) {
+  const saved = readBudgetIQMonthlyContributionGroups();
+  const groups = saved[month];
+  if (!Array.isArray(groups) || !groups.length) return null;
+
+  const validGroups = groups.map((group) => ({
+    count: Math.round(Number(group?.count) || 0),
+    amount: Math.round(Number(group?.amount) || 0)
+  })).filter((group) => group.count > 0 && group.amount > 0);
+  return validGroups.length === groups.length ? validGroups : null;
+}
+
+function readBudgetIQOrderedMemberIds() {
+  if (budgetIQMemberRows.length) {
+    return budgetIQMemberRows.map((row) => String(row.dataset.memberId || '')).filter(Boolean);
+  }
+
+  try {
+    const storedIds = JSON.parse(localStorage.getItem(MEMBER_IDS_KEY) || '[]');
+    if (Array.isArray(storedIds) && storedIds.length) {
+      return [...new Set(storedIds.map(String).filter(Boolean))];
+    }
+  } catch (error) {
+    // Use the default member order when stored member ids are unavailable.
+  }
+  return [...BUDGETIQ_DEFAULT_MEMBER_IDS];
+}
+
+function readBudgetIQContributionForMember(memberId, month = getBudgetIQCurrentMonthName()) {
+  const groupPlan = readBudgetIQContributionGroupPlan(month);
+  if (groupPlan) {
+    const memberIndex = readBudgetIQOrderedMemberIds().indexOf(String(memberId || ''));
+    if (memberIndex < 0) return 0;
+    let groupEnd = 0;
+    for (const group of groupPlan) {
+      groupEnd += group.count;
+      if (memberIndex < groupEnd) return group.amount;
+    }
+    return 0;
+  }
+
+  const monthlyContributions = readBudgetIQMonthlyContributionAmounts();
+  const savedContribution = Number(monthlyContributions[month]);
+  if (Number.isFinite(savedContribution) && savedContribution > 0) return savedContribution;
+  const memberIds = readBudgetIQOrderedMemberIds();
+  if (!memberIds.length) return 0;
+  const expectedAmounts = readBudgetIQMonthlyExpectedAmounts();
+  const savedExpected = Number(expectedAmounts[month]);
+  return Number.isFinite(savedExpected) && savedExpected > 0
+    ? savedExpected / memberIds.length
+    : BUDGETIQ_CONTRIBUTION_PER_MEMBER;
+}
+
+function calculateBudgetIQContributionGroupTotals(groups = readBudgetIQContributionGroupPlan()) {
+  const totalMembers = readBudgetIQOrderedMemberIds().length;
+  if (!groups) return { assigned: 0, expected: 0, totalMembers };
+  let remainingMembers = totalMembers;
+  let assigned = 0;
+  let expected = 0;
+  groups.forEach((group) => {
+    const appliedCount = Math.min(group.count, remainingMembers);
+    assigned += appliedCount;
+    expected += appliedCount * group.amount;
+    remainingMembers -= appliedCount;
+  });
+  return { assigned, expected, totalMembers };
+}
+
 function readBudgetIQExpectedAmount(defaultAmount) {
+  const groupPlan = readBudgetIQContributionGroupPlan();
+  if (groupPlan) return calculateBudgetIQContributionGroupTotals(groupPlan).expected;
   const monthlyContributions = readBudgetIQMonthlyContributionAmounts();
   const contribution = Number(monthlyContributions[getBudgetIQCurrentMonthName()]);
   if (Number.isFinite(contribution) && contribution > 0) {
@@ -1950,6 +2135,9 @@ function saveExpectedAmount(event) {
     const contributions = readBudgetIQMonthlyContributionAmounts();
     delete contributions[month];
     localStorage.setItem(BUDGETIQ_MONTHLY_CONTRIBUTION_KEY, JSON.stringify(contributions));
+    const contributionGroups = readBudgetIQMonthlyContributionGroups();
+    delete contributionGroups[month];
+    localStorage.setItem(BUDGETIQ_MONTHLY_CONTRIBUTION_GROUPS_KEY, JSON.stringify(contributionGroups));
   } catch (error) {
     if (errorLabel) {
       errorLabel.textContent = 'The expected amount could not be saved on this device.';
@@ -1996,17 +2184,133 @@ function readBudgetIQMemberSummary() {
   }
 
   const paid = ids.filter((id) => payments[id] === true).length;
-  return { total: ids.length, paid, unpaid: ids.length - paid };
+  return { total: ids.length, paid, unpaid: ids.length - paid, ids, payments };
 }
 
 function readBudgetIQContributionPerMember() {
-  const monthlyContributions = readBudgetIQMonthlyContributionAmounts();
-  const savedContribution = Number(monthlyContributions[getBudgetIQCurrentMonthName()]);
-  if (Number.isFinite(savedContribution) && savedContribution > 0) return savedContribution;
-  const summary = readBudgetIQMemberSummary();
-  if (!summary.total) return 0;
-  const defaultExpected = summary.total * BUDGETIQ_CONTRIBUTION_PER_MEMBER;
-  return readBudgetIQExpectedAmount(defaultExpected) / summary.total;
+  const memberIds = readBudgetIQOrderedMemberIds();
+  if (!memberIds.length) return 0;
+  const groupPlan = readBudgetIQContributionGroupPlan();
+  if (groupPlan) return calculateBudgetIQContributionGroupTotals(groupPlan).expected / memberIds.length;
+  return readBudgetIQContributionForMember(memberIds[0]);
+}
+
+function createMemberContributionGroupRow(count, amount) {
+  const container = document.getElementById('memberContributionGroupRows');
+  if (!container) return;
+  const row = document.createElement('div');
+  row.dataset.contributionGroupRow = 'true';
+  row.className = 'rounded-2xl border border-white/[0.07] bg-black/20 p-3';
+  row.innerHTML = `
+    <div class="mb-2 flex items-center justify-between">
+      <span class="member-contribution-group-name text-[8px] font-black uppercase tracking-wider text-zinc-500">Group</span>
+      <button type="button" onclick="removeMemberContributionGroup(this)" aria-label="Remove payment group"
+        class="flex h-6 w-6 items-center justify-center rounded-lg text-zinc-600 transition-all active:scale-90">
+        <span class="material-icons text-sm">remove_circle_outline</span>
+      </button>
+    </div>
+    <div class="grid grid-cols-2 gap-2">
+      <label class="space-y-1">
+        <span class="block text-[8px] font-bold uppercase tracking-wider text-zinc-600">Members</span>
+        <input data-contribution-group-count type="number" min="1" step="1" inputmode="numeric" value="${Math.max(1, Math.round(Number(count) || 1))}"
+          oninput="updateMemberContributionPlanPreview()"
+          class="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-3 py-2.5 text-xs font-extrabold text-white outline-none focus:border-[#C1FF72]/40" />
+      </label>
+      <label class="space-y-1">
+        <span class="block text-[8px] font-bold uppercase tracking-wider text-zinc-600">Amount (AED)</span>
+        <input data-contribution-group-amount type="number" min="1" step="1" inputmode="decimal" value="${Math.max(1, Math.round(Number(amount) || 1))}"
+          oninput="updateMemberContributionPlanPreview()"
+          class="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-3 py-2.5 text-xs font-extrabold text-white outline-none focus:border-[#C1FF72]/40" />
+      </label>
+    </div>`;
+  container.appendChild(row);
+  refreshMemberContributionGroupNames();
+}
+
+function refreshMemberContributionGroupNames() {
+  document.querySelectorAll('[data-contribution-group-row]').forEach((row, index) => {
+    const label = row.querySelector('.member-contribution-group-name');
+    if (label) label.textContent = `Group ${index + 1}`;
+  });
+}
+
+function readMemberContributionGroupInputs() {
+  return Array.from(document.querySelectorAll('[data-contribution-group-row]')).map((row) => ({
+    count: Math.round(Number(row.querySelector('[data-contribution-group-count]')?.value) || 0),
+    amount: Math.round(Number(row.querySelector('[data-contribution-group-amount]')?.value) || 0)
+  }));
+}
+
+function setMemberContributionMode(mode) {
+  const modal = document.getElementById('memberContributionModal');
+  const everyoneTab = document.getElementById('memberContributionEveryoneTab');
+  const groupsTab = document.getElementById('memberContributionGroupsTab');
+  const everyonePanel = document.getElementById('memberContributionEveryonePanel');
+  const groupsPanel = document.getElementById('memberContributionGroupsPanel');
+  const everyoneInput = document.getElementById('memberContributionInput');
+  const useGroups = mode === 'groups';
+  if (!modal) return;
+
+  modal.dataset.contributionMode = useGroups ? 'groups' : 'everyone';
+  everyonePanel?.classList.toggle('hidden', useGroups);
+  groupsPanel?.classList.toggle('hidden', !useGroups);
+  if (everyoneInput) everyoneInput.required = !useGroups;
+  document.querySelectorAll('[data-contribution-group-count], [data-contribution-group-amount]').forEach((input) => {
+    input.required = useGroups;
+  });
+
+  const activeClasses = ['border-[#C1FF72]/30', 'bg-[#C1FF72]/10', 'text-[#C1FF72]'];
+  const inactiveClasses = ['border-white/[0.06]', 'bg-black/20', 'text-zinc-500'];
+  [everyoneTab, groupsTab].forEach((tab) => {
+    if (!tab) return;
+    const active = (tab === groupsTab) === useGroups;
+    tab.classList.remove(...(active ? inactiveClasses : activeClasses));
+    tab.classList.add(...(active ? activeClasses : inactiveClasses));
+    tab.setAttribute('aria-pressed', active ? 'true' : 'false');
+  });
+  updateMemberContributionPlanPreview();
+}
+
+function addMemberContributionGroup() {
+  const totalMembers = readBudgetIQOrderedMemberIds().length;
+  const assigned = readMemberContributionGroupInputs().reduce((total, group) => total + Math.max(0, group.count), 0);
+  createMemberContributionGroupRow(Math.max(1, totalMembers - assigned), Math.round(readBudgetIQContributionPerMember()) || BUDGETIQ_CONTRIBUTION_PER_MEMBER);
+  setMemberContributionMode('groups');
+}
+
+function removeMemberContributionGroup(button) {
+  const rows = document.querySelectorAll('[data-contribution-group-row]');
+  if (rows.length <= 1) return;
+  button?.closest('[data-contribution-group-row]')?.remove();
+  refreshMemberContributionGroupNames();
+  updateMemberContributionPlanPreview();
+}
+
+function updateMemberContributionPlanPreview() {
+  const modal = document.getElementById('memberContributionModal');
+  const memberCountLabel = document.getElementById('memberContributionActiveCount');
+  const assignedLabel = document.getElementById('memberContributionAssignedSummary');
+  const expectedLabel = document.getElementById('memberContributionExpectedSummary');
+  const errorLabel = document.getElementById('memberContributionError');
+  const totalMembers = readBudgetIQOrderedMemberIds().length;
+  const useGroups = modal?.dataset.contributionMode === 'groups';
+  let assigned = totalMembers;
+  let expected = totalMembers * Math.max(0, Math.round(Number(document.getElementById('memberContributionInput')?.value) || 0));
+
+  if (useGroups) {
+    const groups = readMemberContributionGroupInputs();
+    assigned = groups.reduce((total, group) => total + Math.max(0, group.count), 0);
+    expected = groups.reduce((total, group) => total + (Math.max(0, group.count) * Math.max(0, group.amount)), 0);
+  }
+
+  if (memberCountLabel) memberCountLabel.textContent = `${totalMembers} active ${totalMembers === 1 ? 'member' : 'members'}`;
+  if (assignedLabel) {
+    assignedLabel.textContent = useGroups ? `${assigned} of ${totalMembers} assigned` : `${totalMembers} of ${totalMembers} assigned`;
+    assignedLabel.classList.toggle('text-[#C1FF72]', assigned === totalMembers);
+    assignedLabel.classList.toggle('text-amber-400', assigned !== totalMembers);
+  }
+  if (expectedLabel) expectedLabel.textContent = `${formatBudgetIQAED(expected)} expected`;
+  errorLabel?.classList.add('hidden');
 }
 
 function openMemberContributionModal() {
@@ -2014,17 +2318,34 @@ function openMemberContributionModal() {
   const input = document.getElementById('memberContributionInput');
   const monthLabel = document.getElementById('memberContributionMonthLabel');
   const errorLabel = document.getElementById('memberContributionError');
+  const groupRows = document.getElementById('memberContributionGroupRows');
   if (!modal || !input) return;
 
   input.value = String(Math.round(readBudgetIQContributionPerMember()));
   if (monthLabel) monthLabel.textContent = getBudgetIQCurrentMonthName();
   if (errorLabel) errorLabel.classList.add('hidden');
+  if (groupRows) groupRows.innerHTML = '';
+  const savedGroups = readBudgetIQContributionGroupPlan();
+  if (savedGroups) {
+    savedGroups.forEach((group) => createMemberContributionGroupRow(group.count, group.amount));
+  } else {
+    const totalMembers = readBudgetIQOrderedMemberIds().length;
+    const firstGroupCount = Math.max(1, Math.ceil(totalMembers / 2));
+    const secondGroupCount = Math.max(1, totalMembers - firstGroupCount);
+    const defaultAmount = Math.round(readBudgetIQContributionPerMember()) || BUDGETIQ_CONTRIBUTION_PER_MEMBER;
+    createMemberContributionGroupRow(firstGroupCount, defaultAmount);
+    if (totalMembers > 1) createMemberContributionGroupRow(secondGroupCount, defaultAmount);
+  }
+  setMemberContributionMode(savedGroups ? 'groups' : 'everyone');
   modal.classList.remove('hidden');
   modal.classList.add('flex');
   document.body.style.overflow = 'hidden';
   setTimeout(() => {
-    input.focus();
-    input.select();
+    const targetInput = savedGroups
+      ? document.querySelector('[data-contribution-group-count]')
+      : input;
+    targetInput?.focus();
+    targetInput?.select();
   }, 80);
 }
 
@@ -2039,11 +2360,16 @@ function closeMemberContributionModal() {
 
 function saveMemberContributionAmount(event) {
   event.preventDefault();
+  const modal = document.getElementById('memberContributionModal');
   const input = document.getElementById('memberContributionInput');
   const errorLabel = document.getElementById('memberContributionError');
+  const useGroups = modal?.dataset.contributionMode === 'groups';
   const amount = Math.round(Number(input?.value) || 0);
+  const groups = readMemberContributionGroupInputs();
+  const totalMembers = readBudgetIQOrderedMemberIds().length;
+  const assignedMembers = groups.reduce((total, group) => total + group.count, 0);
 
-  if (amount <= 0) {
+  if (!useGroups && amount <= 0) {
     if (errorLabel) {
       errorLabel.textContent = 'Enter an amount greater than AED 0.';
       errorLabel.classList.remove('hidden');
@@ -2052,17 +2378,44 @@ function saveMemberContributionAmount(event) {
     return;
   }
 
+  if (useGroups && (!groups.length || groups.some((group) => group.count <= 0 || group.amount <= 0))) {
+    if (errorLabel) {
+      errorLabel.textContent = 'Each group needs at least 1 member and an amount above AED 0.';
+      errorLabel.classList.remove('hidden');
+    }
+    return;
+  }
+
+  if (useGroups && assignedMembers !== totalMembers) {
+    if (errorLabel) {
+      const difference = Math.abs(totalMembers - assignedMembers);
+      errorLabel.textContent = assignedMembers < totalMembers
+        ? `Assign the remaining ${difference} ${difference === 1 ? 'member' : 'members'}.`
+        : `Remove ${difference} extra ${difference === 1 ? 'member' : 'members'} from the groups.`;
+      errorLabel.classList.remove('hidden');
+    }
+    return;
+  }
+
   try {
     const month = getBudgetIQCurrentMonthName();
     const contributions = readBudgetIQMonthlyContributionAmounts();
-    contributions[month] = amount;
+    const contributionGroups = readBudgetIQMonthlyContributionGroups();
+    if (useGroups) {
+      delete contributions[month];
+      contributionGroups[month] = groups;
+    } else {
+      contributions[month] = amount;
+      delete contributionGroups[month];
+    }
     localStorage.setItem(BUDGETIQ_MONTHLY_CONTRIBUTION_KEY, JSON.stringify(contributions));
+    localStorage.setItem(BUDGETIQ_MONTHLY_CONTRIBUTION_GROUPS_KEY, JSON.stringify(contributionGroups));
     const expectedAmounts = readBudgetIQMonthlyExpectedAmounts();
     delete expectedAmounts[month];
     localStorage.setItem(BUDGETIQ_MONTHLY_EXPECTED_KEY, JSON.stringify(expectedAmounts));
   } catch (error) {
     if (errorLabel) {
-      errorLabel.textContent = 'The per-member amount could not be saved on this device.';
+      errorLabel.textContent = 'The member payment plan could not be saved on this device.';
       errorLabel.classList.remove('hidden');
     }
     return;
@@ -2071,12 +2424,16 @@ function saveMemberContributionAmount(event) {
   updateMemberPaymentSummary();
   refreshBudgetIQDashboard();
   closeMemberContributionModal();
-  showNotification(`Per-member amount updated to ${formatBudgetIQAED(amount)}.`);
+  showNotification(useGroups
+    ? `${groups.length} payment ${groups.length === 1 ? 'group' : 'groups'} saved for ${totalMembers} members.`
+    : `Every member will pay ${formatBudgetIQAED(amount)}.`);
 }
 
 function readBudgetIQCollectedTotal() {
   const summary = readBudgetIQMemberSummary();
-  return summary.paid * readBudgetIQContributionPerMember();
+  return readBudgetIQOrderedMemberIds().reduce((total, memberId) => (
+    total + (summary.payments?.[memberId] === true ? readBudgetIQContributionForMember(memberId) : 0)
+  ), 0);
 }
 
 function refreshBudgetIQDashboard() {
@@ -2179,7 +2536,7 @@ applyBudgetIQSelectedUser();
 loadBudgetIQMembers();
 
 window.addEventListener('storage', (event) => {
-  if ([MEMBER_IDS_KEY, MEMBER_PAYMENTS_KEY, MEMBER_MONTHLY_PAYMENTS_KEY, BUDGETIQ_EXPENSES_KEY, BUDGETIQ_MONTHLY_EXPECTED_KEY, BUDGETIQ_MONTHLY_CONTRIBUTION_KEY, 'budgetiq-selected-month'].includes(event.key)) refreshBudgetIQDashboard();
+  if ([MEMBER_IDS_KEY, MEMBER_PAYMENTS_KEY, MEMBER_MONTHLY_PAYMENTS_KEY, BUDGETIQ_EXPENSES_KEY, BUDGETIQ_MONTHLY_EXPECTED_KEY, BUDGETIQ_MONTHLY_CONTRIBUTION_KEY, BUDGETIQ_MONTHLY_CONTRIBUTION_GROUPS_KEY, 'budgetiq-selected-month'].includes(event.key)) refreshBudgetIQDashboard();
   if (['budgetiq-selected-user', 'budgetiq-selected-month'].includes(event.key)) applyBudgetIQSelectedUser();
   if ([
     MEMBER_IDS_KEY,
@@ -2411,6 +2768,7 @@ function readBudgetIQContributionProfileActivities(selectedMonth, memberScope) {
       status,
       personLabel: 'Contributor',
       person: memberName,
+      actor: record.actor || 'A fund user',
       detailLabel: 'Fund',
       detail: `${selectedMonth} Shared Fund`,
       reference: createBudgetIQActivityReference('C', createdAt, record.memberId),
@@ -2455,6 +2813,7 @@ function readBudgetIQExpenseProfileActivities(selectedMonth, memberScope) {
           status: 'Recorded',
           personLabel: 'Purchased By',
           person: item?.buyerName || getBudgetIQBuyerName(item?.buyerId),
+          actor: record.actor || item?.buyerName || getBudgetIQBuyerName(item?.buyerId) || 'A fund user',
           detailLabel: 'Category',
           detail: category.label,
           reference: createBudgetIQActivityReference('E', createdAt, itemIndex + 1),
@@ -2478,6 +2837,258 @@ function readBudgetIQProfileActivities() {
     ...readBudgetIQExpenseProfileActivities(selectedMonth, memberScope)
   ].sort((a, b) => b.timestamp - a.timestamp);
 }
+
+function getBudgetIQCurrentActorName() {
+  try {
+    const selectedUser = localStorage.getItem('budgetiq-selected-user') || 'admin';
+    const savedOverrides = JSON.parse(localStorage.getItem(BUDGETIQ_PROFILE_OVERRIDES_KEY) || '{}');
+    const fallbackNames = { admin: 'Admin', 'user-1': 'User 1', 'user-2': 'User 2', auditor: 'Auditor' };
+    return savedOverrides?.[selectedUser]?.name || fallbackNames[selectedUser] || 'A fund user';
+  } catch (error) {
+    return 'A fund user';
+  }
+}
+
+function recordBudgetIQNotificationEvent({ type = 'system', title = 'Workspace updated', message = '', icon = 'notifications' } = {}) {
+  try {
+    const records = JSON.parse(localStorage.getItem(BUDGETIQ_NOTIFICATION_EVENTS_KEY) || '[]');
+    const events = Array.isArray(records) ? records : [];
+    events.push({
+      id: `notification-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      type,
+      title,
+      message,
+      icon,
+      actor: getBudgetIQCurrentActorName(),
+      month: getBudgetIQProfileSelectedMonth(),
+      createdAt: new Date().toISOString()
+    });
+    localStorage.setItem(BUDGETIQ_NOTIFICATION_EVENTS_KEY, JSON.stringify(events.slice(-500)));
+    renderBudgetIQNotificationBadges();
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
+function readBudgetIQNotificationEvents() {
+  const selectedMonth = getBudgetIQProfileSelectedMonth();
+  const activityNotifications = [
+    ...readBudgetIQContributionProfileActivities(selectedMonth, null),
+    ...readBudgetIQExpenseProfileActivities(selectedMonth, null)
+  ].map((activity) => {
+    const isExpense = activity.type === 'expense';
+    const actor = activity.actor || activity.person || 'A fund user';
+    return {
+      ...activity,
+      title: isExpense
+        ? `${actor} added an expense`
+        : `${actor} updated a contribution`,
+      message: isExpense
+        ? `${activity.title} • ${formatBudgetIQProfileAmount(activity.amount)} • ${activity.person}`
+        : `${activity.person} was marked ${activity.status === 'Reversed' ? 'not paid' : 'paid'} • ${formatBudgetIQProfileAmount(Math.abs(activity.amount))}`
+    };
+  });
+
+  let savedEvents = [];
+  try {
+    const records = JSON.parse(localStorage.getItem(BUDGETIQ_NOTIFICATION_EVENTS_KEY) || '[]');
+    if (Array.isArray(records)) savedEvents = records;
+  } catch (error) {
+    savedEvents = [];
+  }
+
+  const memberNotifications = savedEvents
+    .filter((event) => event?.month === selectedMonth)
+    .map((event) => ({
+      id: String(event.id || `notification-${event.createdAt || Date.now()}`),
+      type: event.type || 'system',
+      title: event.title || 'Workspace updated',
+      message: event.message || 'A workspace change was recorded.',
+      actor: event.actor || 'A fund user',
+      createdAt: event.createdAt || new Date().toISOString(),
+      timestamp: new Date(event.createdAt || '').getTime() || 0,
+      month: event.month || selectedMonth,
+      icon: event.icon || 'notifications',
+      iconClass: event.type === 'member'
+        ? 'bg-purple-500/10 border-purple-500/20 text-purple-400'
+        : 'bg-zinc-500/10 border-zinc-500/20 text-zinc-400'
+    }));
+
+  return [...activityNotifications, ...memberNotifications]
+    .sort((a, b) => b.timestamp - a.timestamp);
+}
+
+function getBudgetIQNotificationReaderId() {
+  try {
+    return localStorage.getItem('budgetiq-selected-user') || 'admin';
+  } catch (error) {
+    return 'admin';
+  }
+}
+
+function readBudgetIQNotificationReadIds() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(BUDGETIQ_NOTIFICATION_READ_IDS_KEY) || '{}');
+    const ids = saved?.[getBudgetIQNotificationReaderId()];
+    return new Set(Array.isArray(ids) ? ids.map(String) : []);
+  } catch (error) {
+    return new Set();
+  }
+}
+
+function saveBudgetIQNotificationReadIds(readIds) {
+  try {
+    const saved = JSON.parse(localStorage.getItem(BUDGETIQ_NOTIFICATION_READ_IDS_KEY) || '{}');
+    const records = saved && typeof saved === 'object' && !Array.isArray(saved) ? saved : {};
+    records[getBudgetIQNotificationReaderId()] = Array.from(readIds).slice(-500);
+    localStorage.setItem(BUDGETIQ_NOTIFICATION_READ_IDS_KEY, JSON.stringify(records));
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
+function renderBudgetIQNotificationBadges() {
+  const badges = document.querySelectorAll('[data-budgetiq-notification-badge]');
+  if (!badges.length) return;
+  const readIds = readBudgetIQNotificationReadIds();
+  const unreadCount = readBudgetIQNotificationEvents().filter((event) => !readIds.has(String(event.id))).length;
+  badges.forEach((badge) => {
+    badge.textContent = unreadCount > 99 ? '99+' : String(unreadCount);
+    badge.classList.toggle('hidden', unreadCount === 0);
+  });
+}
+
+let budgetIQNotificationFilter = 'all';
+let budgetIQNotificationsById = new Map();
+
+function formatBudgetIQNotificationTime(value) {
+  const date = new Date(value || '');
+  if (Number.isNaN(date.getTime())) return 'Recently';
+  const now = new Date();
+  const sameDay = date.toDateString() === now.toDateString();
+  return sameDay
+    ? `Today • ${date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`
+    : date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: date.getFullYear() === now.getFullYear() ? undefined : 'numeric' });
+}
+
+function renderBudgetIQNotifications() {
+  const list = document.getElementById('notificationActivityList');
+  if (!list) return;
+  const notifications = readBudgetIQNotificationEvents();
+  const readIds = readBudgetIQNotificationReadIds();
+  const unreadCount = notifications.filter((event) => !readIds.has(String(event.id))).length;
+  const visible = notifications.filter((event) => budgetIQNotificationFilter === 'all' || event.type === budgetIQNotificationFilter);
+  budgetIQNotificationsById = new Map(notifications.map((event) => [String(event.id), event]));
+
+  const countLabel = document.getElementById('notificationUnreadCount');
+  const summaryLabel = document.getElementById('notificationSummary');
+  const monthLabel = document.getElementById('notificationMonth');
+  if (countLabel) countLabel.textContent = String(unreadCount);
+  if (summaryLabel) summaryLabel.textContent = unreadCount
+    ? `${unreadCount} ${unreadCount === 1 ? 'update needs' : 'updates need'} your attention`
+    : 'You are all caught up';
+  if (monthLabel) monthLabel.textContent = getBudgetIQProfileSelectedMonth();
+
+  if (!visible.length) {
+    list.innerHTML = `
+      <div class="rounded-2xl border border-dashed border-zinc-800 bg-zinc-900/30 px-5 py-10 text-center">
+        <span class="material-icons text-3xl text-zinc-700">notifications_none</span>
+        <p class="mt-3 text-[10px] font-bold uppercase tracking-wider text-zinc-500">No notifications yet</p>
+        <p class="mt-1 text-[9px] font-semibold text-zinc-600">New expenses, contributions and member updates will appear here.</p>
+      </div>`;
+    renderBudgetIQNotificationBadges();
+    return;
+  }
+
+  list.innerHTML = visible.map((event) => {
+    const isUnread = !readIds.has(String(event.id));
+    return `
+      <button type="button" data-notification-id="${escapeBudgetIQHtml(event.id)}" onclick="openBudgetIQNotification(this.dataset.notificationId)"
+        class="group w-full rounded-2xl border p-4 text-left transition-all active:scale-[0.99] ${isUnread ? 'budgetiq-notification-unread' : 'border-zinc-800 bg-zinc-900/55'}">
+        <span class="flex items-start gap-3">
+          <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border ${event.iconClass}">
+            <span class="material-icons text-base">${escapeBudgetIQHtml(event.icon)}</span>
+          </span>
+          <span class="min-w-0 flex-1">
+            <span class="flex items-center gap-2">
+              <span class="truncate text-xs font-extrabold text-white">${escapeBudgetIQHtml(event.title)}</span>
+              ${isUnread ? '<span class="budgetiq-notification-unread-dot h-2 w-2 shrink-0 rounded-full bg-[#C1FF72]"></span>' : ''}
+            </span>
+            <span class="mt-1 block text-[9px] font-semibold leading-relaxed text-zinc-500">${escapeBudgetIQHtml(event.message)}</span>
+            <span class="mt-2 block text-[8px] font-black uppercase tracking-wider text-zinc-600">${escapeBudgetIQHtml(formatBudgetIQNotificationTime(event.createdAt))}</span>
+          </span>
+          <span class="material-icons mt-2 text-sm text-zinc-700 transition-transform group-hover:translate-x-1 group-hover:text-[#C1FF72]">chevron_right</span>
+        </span>
+      </button>`;
+  }).join('');
+  renderBudgetIQNotificationBadges();
+}
+
+function filterBudgetIQNotifications(type, element) {
+  budgetIQNotificationFilter = ['expense', 'contribution', 'member'].includes(type) ? type : 'all';
+  document.querySelectorAll('.notification-filter-btn').forEach((button) => {
+    button.className = 'notification-filter-btn text-gray-400 text-[8px] font-extrabold px-2 py-2 rounded-lg uppercase hover:text-white transition-all';
+  });
+  if (element) {
+    element.className = 'notification-filter-btn bg-[#C1FF72] text-black text-[8px] font-black px-2 py-2 rounded-lg uppercase transition-all shadow-md';
+  }
+  renderBudgetIQNotifications();
+}
+
+function markAllBudgetIQNotificationsRead() {
+  const readIds = readBudgetIQNotificationReadIds();
+  readBudgetIQNotificationEvents().forEach((event) => readIds.add(String(event.id)));
+  if (!saveBudgetIQNotificationReadIds(readIds)) {
+    showToast('Notifications could not be updated', 'warning', 'text-amber-400');
+    return;
+  }
+  renderBudgetIQNotifications();
+  showToast('All notifications marked as read', 'done_all', 'text-[#C1FF72]');
+}
+
+function openBudgetIQNotification(notificationId) {
+  const event = budgetIQNotificationsById.get(String(notificationId || ''));
+  if (!event) return;
+  const readIds = readBudgetIQNotificationReadIds();
+  readIds.add(String(event.id));
+  saveBudgetIQNotificationReadIds(readIds);
+  renderBudgetIQNotifications();
+  if (event.type !== 'expense' && event.type !== 'contribution') return;
+  openOrderDetailModal(
+    event.type === 'expense' ? event.message.split(' • ')[0] : `${event.person} Contribution`,
+    event.type === 'expense' ? 'Expense' : 'Contribution',
+    formatBudgetIQProfileAmount(event.amount),
+    formatBudgetIQProfileDate(event.createdAt, event.month),
+    event.status,
+    {
+      icon: event.icon,
+      personLabel: event.personLabel,
+      person: event.person,
+      detailLabel: event.detailLabel,
+      detail: event.detail,
+      reference: event.reference
+    }
+  );
+}
+
+function initializeBudgetIQNotifications() {
+  renderBudgetIQNotificationBadges();
+  renderBudgetIQNotifications();
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeBudgetIQNotifications, { once: true });
+} else {
+  initializeBudgetIQNotifications();
+}
+
+window.addEventListener('storage', (event) => {
+  if ([BUDGETIQ_EXPENSES_KEY, BUDGETIQ_CONTRIBUTION_ACTIVITY_KEY, BUDGETIQ_NOTIFICATION_EVENTS_KEY, BUDGETIQ_NOTIFICATION_READ_IDS_KEY].includes(event.key)) {
+    initializeBudgetIQNotifications();
+  }
+});
 
 function readBudgetIQMonthlyReceiptItems(selectedMonth, memberScope) {
   const receipts = [];
@@ -2517,6 +3128,69 @@ function getBudgetIQMonthlyReportFilename(month) {
   return `budgetiq-${safeMonth || 'monthly'}-history.pdf`;
 }
 
+function getBudgetIQMonthlyExcelFilename(month) {
+  const safeMonth = String(month || 'monthly').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  return `budgetiq-${safeMonth || 'monthly'}-history.xlsx`;
+}
+
+function downloadBudgetIQExcelBlob(blob, filename) {
+  const downloadUrl = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = downloadUrl;
+  link.download = filename;
+  link.rel = 'noopener';
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(downloadUrl), 60000);
+}
+
+async function exportBudgetIQMonthlyHistoryExcel() {
+  if (!window.BudgetIQExcel?.createMonthlyHistoryWorkbook) {
+    alert('The Excel exporter is still loading. Please try again.');
+    return;
+  }
+
+  const selectedMonth = getBudgetIQProfileSelectedMonth();
+  const memberScope = getBudgetIQProfileMemberScope();
+  const activities = readBudgetIQProfileActivities();
+  const receipts = readBudgetIQMonthlyReceiptItems(selectedMonth, memberScope);
+  const owner = document.getElementById('budgetIQSidebarFooterUser')?.textContent?.trim() || 'BudgetIQ user';
+  const filename = getBudgetIQMonthlyExcelFilename(selectedMonth);
+  const blob = window.BudgetIQExcel.createMonthlyHistoryWorkbook({
+    month: selectedMonth,
+    scope: memberScope ? `${owner} activity` : 'All fund members',
+    owner,
+    generatedAt: new Date(),
+    activities,
+    receipts
+  });
+
+  try {
+    if (typeof File === 'function' && navigator.share && navigator.canShare) {
+      const file = new File([blob], filename, { type: window.BudgetIQExcel.MIME_TYPE });
+      if (navigator.canShare({ files: [file] })) {
+        closePurchaseShareModal();
+        await navigator.share({
+          files: [file],
+          title: `${selectedMonth} BudgetIQ history`,
+          text: 'BudgetIQ monthly shared-fund Excel report'
+        });
+        triggerToast('Excel report ready', 'table_view', 'text-emerald-400');
+        return;
+      }
+    }
+
+    downloadBudgetIQExcelBlob(blob, filename);
+    closePurchaseShareModal();
+    triggerToast('Excel report downloaded', 'table_view', 'text-emerald-400');
+  } catch (error) {
+    if (error?.name === 'AbortError') return;
+    console.error('[BudgetIQ] Excel export failed:', error);
+    alert('The Excel report could not be created on this device. Please try again.');
+  }
+}
+
 function refreshBudgetIQHistoryPdfCard() {
   const label = document.getElementById('historyPdfButtonLabel');
   const summary = document.getElementById('historyPdfButtonSummary');
@@ -2550,6 +3224,7 @@ function exportBudgetIQMonthlyHistoryPDF() {
     alert('Allow popups to open the monthly PDF report.');
     return;
   }
+  const pdfViewer = createBudgetIQPdfViewer(reportWindow);
 
   const now = new Date();
   const generatedDate = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
@@ -2640,9 +3315,10 @@ function exportBudgetIQMonthlyHistoryPDF() {
 
   reportWindow.document.write(`<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeBudgetIQHtml(getBudgetIQMonthlyReportFilename(selectedMonth))}</title>
     <style>
-      *{box-sizing:border-box}html,body{margin:0;padding:0}body{background:#d9d9d9;color:#343434;font-family:Arial,Helvetica,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}.sheet{position:relative;width:210mm;min-height:297mm;margin:12mm auto;background:#fff;overflow:hidden;page-break-after:always;box-shadow:0 5mm 18mm rgba(0,0,0,.18)}.sheet:last-child{page-break-after:auto}.top-corner{position:absolute;z-index:1;top:0;right:0;width:25mm;height:20mm;background:linear-gradient(135deg,#efad22,#dc8617);clip-path:polygon(48% 0,100% 0,100% 100%)}.top-arc,.bottom-arc{position:absolute;border-style:solid;border-radius:50%;pointer-events:none}.top-arc{z-index:0;transform:rotate(-10deg)}.arc-a{width:145mm;height:57mm;top:-41mm;left:-43mm;border-width:13mm;border-color:#e6a31c}.arc-b{width:108mm;height:48mm;top:-35mm;left:30mm;border-width:10mm;border-color:#d98318}.arc-c{width:158mm;height:58mm;top:-44mm;left:-8mm;border-width:2mm;border-color:#555 transparent transparent transparent}.bottom-corner{position:absolute;z-index:1;bottom:0;left:0;width:23mm;height:18mm;background:#e7991b;clip-path:polygon(0 0,0 100%,100% 100%)}.bottom-arc{z-index:0;transform:rotate(-14deg)}.arc-d{width:155mm;height:65mm;bottom:-46mm;right:-39mm;border-width:14mm;border-color:#e7a51e}.arc-e{width:112mm;height:52mm;bottom:-36mm;right:27mm;border-width:10mm;border-color:#d98518}.arc-f{width:165mm;height:62mm;bottom:-45mm;right:-8mm;border-width:2mm;border-color:#4e4e50 transparent transparent transparent}.brand{position:absolute;z-index:2;top:35mm;left:19mm;display:flex;align-items:center;gap:3mm}.brand-mark{display:flex;width:13mm;height:13mm;align-items:center;justify-content:center;border:1.2mm solid #e69e1b;border-radius:50%;color:#e69e1b;font-size:7mm;font-weight:900}.brand-name{color:#363638;font-size:6mm;font-weight:900;letter-spacing:.5mm;line-height:1}.brand-name span{color:#e69e1b}.brand-tagline{margin-top:1.4mm;color:#858585;font-size:1.8mm;font-weight:700;letter-spacing:.52mm}.brand-rule{position:absolute;z-index:2;top:53mm;left:19mm;width:172mm;height:.7mm;background:linear-gradient(90deg,#e7a31d 0,#e7a31d 73%,#555 73%,#555 100%)}.report-meta{position:absolute;z-index:2;top:65mm;bottom:42mm;left:19mm;display:flex;width:36mm;flex-direction:column;padding:8mm 6mm 5mm 0;border-right:.45mm solid #c6c6c6}.report-meta:before,.report-meta:after{content:"";position:absolute;right:-1.55mm;width:2.7mm;height:2.7mm;border:.6mm solid #e39a1a;border-radius:50%;background:#fff}.report-meta:before{top:-1.2mm}.report-meta:after{bottom:-1.2mm}.meta-block{margin-bottom:11mm}.meta-label{display:block;margin-bottom:2mm;color:#e09619;font-size:2.2mm;font-weight:900;letter-spacing:.45mm}.meta-block strong{display:block;color:#414143;font-size:3.5mm;line-height:1.45}.meta-block small{display:block;margin-top:1mm;color:#8b8b8c;font-size:2.5mm;line-height:1.55}.total-side{margin-top:auto}.total-side strong{color:#d78117;font-size:4.1mm}.report-content{position:relative;z-index:2;margin:0 18mm 0 64mm;padding-top:66mm;min-height:255mm}.report-heading{display:flex;align-items:flex-end;justify-content:space-between}.eyebrow{display:block;margin-bottom:1.5mm;color:#df941a;font-size:2.4mm;font-weight:900;letter-spacing:.65mm}.report-heading h1{margin:0;color:#353537;font-size:9mm;line-height:1;font-weight:900;letter-spacing:-.3mm}.report-badge{border:.45mm solid #e3a026;border-radius:6mm;padding:2mm 3.5mm;color:#d88917;font-size:2.2mm;font-weight:900;letter-spacing:.4mm}.intro{max-width:110mm;margin:4mm 0 8mm;color:#777;font-size:3mm;line-height:1.55}table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:2.75mm}.col-number{width:8%}.col-purchase{width:31%}.col-buyer{width:21%}.col-category{width:19%}.col-amount{width:21%}th{padding:3mm 1.5mm;border-top:.5mm solid #e29a1b;border-bottom:.5mm solid #e29a1b;color:#d88817;font-size:2.1mm;font-weight:900;letter-spacing:.32mm;text-align:left;text-transform:uppercase}td{height:13mm;padding:2.4mm 1.5mm;border-bottom:.25mm solid #dedede;color:#4d4d4f;vertical-align:middle;overflow-wrap:anywhere}td.number{color:#b1b1b1;font-weight:700}td strong{display:block;color:#38383a;font-size:2.8mm;line-height:1.25}.record-detail{display:block;margin-top:.7mm;color:#929292;font-size:2.2mm;line-height:1.2}.category{display:inline-block;margin:0;padding:1.2mm 2mm;border-radius:4mm;background:#f9eedb;color:#c87813;font-size:2.1mm;font-weight:800}.category.contribution{background:#eef7e7;color:#5d8d39}.category.expense{background:#f9eedb;color:#c87813}.amount{text-align:right;font-weight:900;white-space:nowrap}.expense-amount{color:#c87813}.empty td{height:35mm;color:#999;text-align:center;font-style:italic}.monthly-totals{display:grid;grid-template-columns:1fr 1fr 1.15fr;margin:7mm 0 0 auto;padding:4mm 5mm;border-left:1.3mm solid #e39a1a;background:#f6f3ee;gap:3mm}.monthly-totals span,.monthly-totals strong{color:#4b4b4d;font-size:3.1mm;font-weight:800}.monthly-totals strong{color:#d47f15}.monthly-totals small{display:block;margin-bottom:1mm;color:#d78a16;font-size:1.8mm;letter-spacing:.25mm}.receipt-stack{display:grid;grid-template-rows:repeat(2,70mm);gap:5mm;margin-top:5mm}.receipt-card{display:flex;min-height:0;flex-direction:column;padding:3.5mm;border:.3mm solid #dedede;border-radius:2.5mm;background:#fff;box-shadow:0 1.5mm 5mm rgba(0,0,0,.05);break-inside:avoid}.receipt-photo{display:flex;min-height:0;flex:1;align-items:center;justify-content:center;overflow:hidden;border:.25mm solid #e6e1d8;border-radius:1.5mm;background:#faf7f1}.receipt-photo img{display:block;width:100%;height:100%;object-fit:contain}.receipt-summary{display:flex;align-items:flex-end;justify-content:space-between;margin-top:2mm}.receipt-summary span{display:block;color:#d88917;font-size:1.8mm;font-weight:900;letter-spacing:.3mm}.receipt-summary strong{display:block;margin-top:.5mm;color:#38383a;font-size:2.8mm}.receipt-summary b{color:#d47f15;font-size:3.5mm}.receipt-details{display:grid;grid-template-columns:repeat(4,1fr);gap:1.5mm;margin-top:2mm;padding-top:2mm;border-top:.25mm solid #e5e5e5;color:#4d4d4f;font-size:2mm;font-weight:800}.receipt-details small{display:block;margin-bottom:.5mm;color:#9a9a9a;font-size:1.55mm;font-weight:900;letter-spacing:.14mm}footer{position:absolute;z-index:2;right:19mm;bottom:25mm;left:64mm;display:flex;justify-content:space-between;color:#777;font-size:2.2mm;letter-spacing:.18mm}footer strong{color:#4d4d4f}@page{size:A4;margin:0}@media print{body{background:#fff}.sheet{margin:0;box-shadow:none;width:210mm;height:297mm;min-height:297mm}}
-    </style></head><body>${activityPages}${receiptPages}</body></html>`);
+      *{box-sizing:border-box}html,body{margin:0;padding:0}body{background:#d9d9d9;color:#343434;font-family:Arial,Helvetica,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}.sheet{position:relative;width:210mm;min-height:297mm;margin:12mm auto;background:#fff;overflow:hidden;page-break-after:always;box-shadow:0 5mm 18mm rgba(0,0,0,.18)}.sheet:last-child{page-break-after:auto}.top-corner{position:absolute;z-index:1;top:0;right:0;width:25mm;height:20mm;background:linear-gradient(135deg,#efad22,#dc8617);clip-path:polygon(48% 0,100% 0,100% 100%)}.top-arc,.bottom-arc{position:absolute;border-style:solid;border-radius:50%;pointer-events:none}.top-arc{z-index:0;transform:rotate(-10deg)}.arc-a{width:145mm;height:57mm;top:-41mm;left:-43mm;border-width:13mm;border-color:#e6a31c}.arc-b{width:108mm;height:48mm;top:-35mm;left:30mm;border-width:10mm;border-color:#d98318}.arc-c{width:158mm;height:58mm;top:-44mm;left:-8mm;border-width:2mm;border-color:#555 transparent transparent transparent}.bottom-corner{position:absolute;z-index:1;bottom:0;left:0;width:23mm;height:18mm;background:#e7991b;clip-path:polygon(0 0,0 100%,100% 100%)}.bottom-arc{z-index:0;transform:rotate(-14deg)}.arc-d{width:155mm;height:65mm;bottom:-46mm;right:-39mm;border-width:14mm;border-color:#e7a51e}.arc-e{width:112mm;height:52mm;bottom:-36mm;right:27mm;border-width:10mm;border-color:#d98518}.arc-f{width:165mm;height:62mm;bottom:-45mm;right:-8mm;border-width:2mm;border-color:#4e4e50 transparent transparent transparent}.brand{position:absolute;z-index:2;top:35mm;left:19mm;display:flex;align-items:center;gap:3mm}.brand-mark{display:flex;width:13mm;height:13mm;align-items:center;justify-content:center;border:1.2mm solid #e69e1b;border-radius:50%;color:#e69e1b;font-size:7mm;font-weight:900}.brand-name{color:#363638;font-size:6mm;font-weight:900;letter-spacing:.5mm;line-height:1}.brand-name span{color:#e69e1b}.brand-tagline{margin-top:1.4mm;color:#858585;font-size:1.8mm;font-weight:700;letter-spacing:.52mm}.brand-rule{position:absolute;z-index:2;top:53mm;left:19mm;width:172mm;height:.7mm;background:linear-gradient(90deg,#e7a31d 0,#e7a31d 73%,#555 73%,#555 100%)}.report-meta{position:absolute;z-index:2;top:65mm;bottom:42mm;left:19mm;display:flex;width:36mm;flex-direction:column;padding:8mm 6mm 5mm 0;border-right:.45mm solid #c6c6c6}.report-meta:before,.report-meta:after{content:"";position:absolute;right:-1.55mm;width:2.7mm;height:2.7mm;border:.6mm solid #e39a1a;border-radius:50%;background:#fff}.report-meta:before{top:-1.2mm}.report-meta:after{bottom:-1.2mm}.meta-block{margin-bottom:11mm}.meta-label{display:block;margin-bottom:2mm;color:#e09619;font-size:2.2mm;font-weight:900;letter-spacing:.45mm}.meta-block strong{display:block;color:#414143;font-size:3.5mm;line-height:1.45}.meta-block small{display:block;margin-top:1mm;color:#8b8b8c;font-size:2.5mm;line-height:1.55}.total-side{margin-top:auto}.total-side strong{color:#d78117;font-size:4.1mm}.report-content{position:relative;z-index:2;margin:0 18mm 0 64mm;padding-top:66mm;min-height:255mm}.report-heading{display:flex;align-items:flex-end;justify-content:space-between}.eyebrow{display:block;margin-bottom:1.5mm;color:#df941a;font-size:2.4mm;font-weight:900;letter-spacing:.65mm}.report-heading h1{margin:0;color:#353537;font-size:9mm;line-height:1;font-weight:900;letter-spacing:-.3mm}.report-badge{border:.45mm solid #e3a026;border-radius:6mm;padding:2mm 3.5mm;color:#d88917;font-size:2.2mm;font-weight:900;letter-spacing:.4mm}.intro{max-width:110mm;margin:4mm 0 8mm;color:#777;font-size:3mm;line-height:1.55}table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:2.75mm}.col-number{width:8%}.col-purchase{width:31%}.col-buyer{width:21%}.col-category{width:19%}.col-amount{width:21%}th{padding:3mm 1.5mm;border-top:.5mm solid #e29a1b;border-bottom:.5mm solid #e29a1b;color:#d88817;font-size:2.1mm;font-weight:900;letter-spacing:.32mm;text-align:left;text-transform:uppercase}td{height:13mm;padding:2.4mm 1.5mm;border-bottom:.25mm solid #dedede;color:#4d4d4f;vertical-align:middle;overflow-wrap:anywhere}td.number{color:#b1b1b1;font-weight:700}td strong{display:block;color:#38383a;font-size:2.8mm;line-height:1.25}.record-detail{display:block;margin-top:.7mm;color:#929292;font-size:2.2mm;line-height:1.2}.category{display:inline-block;margin:0;padding:1.2mm 2mm;border-radius:4mm;background:#f9eedb;color:#c87813;font-size:2.1mm;font-weight:800}.category.contribution{background:#eef7e7;color:#5d8d39}.category.expense{background:#f9eedb;color:#c87813}.amount{text-align:right;font-weight:900;white-space:nowrap}.expense-amount{color:#c87813}.empty td{height:35mm;color:#999;text-align:center;font-style:italic}.monthly-totals{display:grid;grid-template-columns:1fr 1fr 1.15fr;margin:7mm 0 0 auto;padding:4mm 5mm;border-left:1.3mm solid #e39a1a;background:#f6f3ee;gap:3mm}.monthly-totals span,.monthly-totals strong{color:#4b4b4d;font-size:3.1mm;font-weight:800}.monthly-totals strong{color:#d47f15}.monthly-totals small{display:block;margin-bottom:1mm;color:#d78a16;font-size:1.8mm;letter-spacing:.25mm}.receipt-stack{display:grid;grid-template-rows:repeat(2,70mm);gap:5mm;margin-top:5mm}.receipt-card{display:flex;min-height:0;flex-direction:column;padding:3.5mm;border:.3mm solid #dedede;border-radius:2.5mm;background:#fff;box-shadow:0 1.5mm 5mm rgba(0,0,0,.05);break-inside:avoid}.receipt-photo{display:flex;min-height:0;flex:1;align-items:center;justify-content:center;overflow:hidden;border:.25mm solid #e6e1d8;border-radius:1.5mm;background:#faf7f1}.receipt-photo img{display:block;width:100%;height:100%;object-fit:contain}.receipt-summary{display:flex;align-items:flex-end;justify-content:space-between;margin-top:2mm}.receipt-summary span{display:block;color:#d88917;font-size:1.8mm;font-weight:900;letter-spacing:.3mm}.receipt-summary strong{display:block;margin-top:.5mm;color:#38383a;font-size:2.8mm}.receipt-summary b{color:#d47f15;font-size:3.5mm}.receipt-details{display:grid;grid-template-columns:repeat(4,1fr);gap:1.5mm;margin-top:2mm;padding-top:2mm;border-top:.25mm solid #e5e5e5;color:#4d4d4f;font-size:2mm;font-weight:800}.receipt-details small{display:block;margin-bottom:.5mm;color:#9a9a9a;font-size:1.55mm;font-weight:900;letter-spacing:.14mm}footer{position:absolute;z-index:2;right:19mm;bottom:25mm;left:64mm;display:flex;justify-content:space-between;color:#777;font-size:2.2mm;letter-spacing:.18mm}footer strong{color:#4d4d4f}${pdfViewer.style}@page{size:A4;margin:0}@media print{body{background:#fff}.sheet{margin:0;box-shadow:none;width:210mm;height:297mm;min-height:297mm}}
+    </style></head><body>${pdfViewer.toolbar}${activityPages}${receiptPages}</body></html>`);
   reportWindow.document.close();
+  pdfViewer.activate();
   closePurchaseShareModal();
   const images = Array.from(reportWindow.document.images);
   Promise.allSettled(images.map((image) => new Promise((resolve) => {
@@ -2659,6 +3335,10 @@ function exportBudgetIQMonthlyHistoryPDF() {
 
 function exportPurchaseReportPDF() {
   exportBudgetIQMonthlyHistoryPDF();
+}
+
+function exportPurchaseReportExcel() {
+  exportBudgetIQMonthlyHistoryExcel();
 }
 
 function getBudgetIQActivityStatusClass(status) {
@@ -3232,13 +3912,9 @@ if (splashUserSelect) {
  * ------------------------------------------------------------------ */
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", function () {
-    navigator.serviceWorker.register("./sw.js?v=59", { scope: "./" })
-      .then(function (registration) {
-        return registration.update();
-      })
-      .catch(function (err) {
-        console.warn("[PWA] Service worker registration failed:", err);
-      });
+    navigator.serviceWorker.register("sw.js?v=63").catch(function (err) {
+      console.warn("[PWA] Service worker registration failed:", err);
+    });
   });
 }
 
@@ -3247,16 +3923,14 @@ if ("serviceWorker" in navigator) {
 // BUDGETIQ FAST PAGE NAVIGATION
 // =======================================================
 const BUDGETIQ_CORE_PAGE_URLS = [
-  './splash.html',
-  './dashboard.html',
-  './plan.html',
-  './cart.html',
-  './history.html',
-  './profile.html'
+  'splash.html',
+  'index.html',
+  'plan.html',
+  'cart.html',
+  'history.html',
+  'notifications.html',
+  'profile.html'
 ];
-const BUDGETIQ_CORE_PAGE_NAMES = new Set(
-  BUDGETIQ_CORE_PAGE_URLS.map((page) => page.replace('./', ''))
-);
 const budgetIQPagePreloads = new Map();
 
 function preloadBudgetIQPage(url) {
@@ -3272,8 +3946,8 @@ function preloadBudgetIQPage(url) {
 function preloadBudgetIQLinkFromEvent(event) {
   const link = event.target?.closest?.('a[href]');
   if (!link || link.origin !== window.location.origin) return;
-  const pageName = link.pathname.split('/').pop();
-  if (BUDGETIQ_CORE_PAGE_NAMES.has(pageName)) preloadBudgetIQPage(link.href);
+  const page = link.pathname.split('/').pop();
+  if (BUDGETIQ_CORE_PAGE_URLS.includes(page)) preloadBudgetIQPage(link.href);
 }
 
 document.addEventListener('touchstart', preloadBudgetIQLinkFromEvent, { passive: true, capture: true });

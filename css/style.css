@@ -101,6 +101,44 @@ body::-webkit-scrollbar-thumb,
   scrollbar-color: #C1FF72 #18181b;
   scrollbar-gutter: stable;
 }
+
+/* Notification center accents. Kept semantic so the static PWA does not depend on newly generated Tailwind utilities. */
+.budgetiq-notification-badge,
+[data-budgetiq-notification-badge] {
+  min-width: 18px;
+  line-height: 1;
+}
+
+.budgetiq-notification-page-glow {
+  background: rgba(193, 255, 114, 0.1);
+}
+
+.budgetiq-notification-summary-card {
+  border-color: rgba(193, 255, 114, 0.15);
+  background: linear-gradient(135deg, rgba(193, 255, 114, 0.09), rgba(24, 24, 27, 0.82) 54%, rgba(168, 85, 247, 0.08));
+}
+
+.budgetiq-notification-summary-icon {
+  box-shadow: 0 0 28px rgba(193, 255, 114, 0.16);
+}
+
+.budgetiq-notification-cloud-card {
+  border-color: rgba(14, 165, 233, 0.15);
+  background: rgba(14, 165, 233, 0.045);
+}
+
+.budgetiq-notification-unread {
+  border-color: rgba(193, 255, 114, 0.2);
+  background: rgba(193, 255, 114, 0.045);
+}
+
+.budgetiq-notification-unread-dot {
+  box-shadow: 0 0 10px rgba(193, 255, 114, 0.7);
+}
+
+.budgetiq-notification-toast {
+  z-index: 60;
+}
 .history-activity-scroll::-webkit-scrollbar {
   display: block;
   width: 4px;

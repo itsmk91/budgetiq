@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#0A0A0C">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="BudgetIQ">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="icon" href="img/logo.png" type="image/png">
+  <title>BudgetIQ Notifications</title>
+  <link rel="stylesheet" href="css/tailwind.min.css?v=1">
+  <link rel="preload" href="fonts/material-icons.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/style.css?v=4">
+  <script defer src="js/budgetiq-core.js?v=63"></script>
+</head>
+
+<body class="bg-[#0A0A0C] min-h-screen flex items-center justify-center relative">
+  <div class="w-full max-w-md min-h-screen bg-[#0A0A0C] text-white flex flex-col justify-between relative pb-24 select-none shadow-2xl overflow-hidden">
+    <div class="budgetiq-notification-page-glow absolute top-0 right-0 h-64 w-64 rounded-full blur-[90px] pointer-events-none"></div>
+    <div class="absolute bottom-24 left-0 h-64 w-64 rounded-full bg-purple-500/10 blur-[90px] pointer-events-none"></div>
+
+    <div class="ps-6 pt-6 pe-6 flex justify-between items-center z-20 backdrop-blur-md">
+      <button id="hamburgerBtn" aria-label="Open menu"
+        class="w-11 h-11 rounded-2xl bg-white/[0.03] border border-white/[0.08] flex items-center justify-center text-gray-400 hover:text-[#C1FF72] hover:border-[#C1FF72]/40 transition-all duration-300 active:scale-95 shadow-md">
+        <span class="material-icons text-xl">menu</span>
+      </button>
+      <div class="flex items-center gap-1.5">
+        <img src="img/budgetiq-logo.png" alt="BudgetIQ logo" class="w-6 h-6 rounded-md object-contain">
+        <span class="text-xs font-black tracking-widest text-white">BudgetIQ.</span>
+      </div>
+      <div id="profileHeaderAvatar"
+        class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#C1FF72]/10 to-emerald-500/10 border border-[#C1FF72]/20 flex items-center justify-center text-[#C1FF72] font-black text-sm">
+        A
+      </div>
+    </div>
+
+    <main class="flex-grow overflow-y-auto no-scrollbar p-6 space-y-5 z-10">
+      <div class="flex items-end justify-between">
+        <div>
+          <p class="text-[9px] font-black uppercase tracking-[0.2em] text-[#C1FF72]">Workspace activity</p>
+          <h1 class="mt-1 text-2xl font-extrabold tracking-tight text-white">Notifications</h1>
+        </div>
+        <span class="relative flex h-11 w-11 items-center justify-center rounded-2xl border border-[#C1FF72]/20 bg-[#C1FF72]/10 text-[#C1FF72]">
+          <span class="material-icons text-xl">notifications_active</span>
+          <span data-budgetiq-notification-badge class="budgetiq-notification-badge hidden absolute -right-1.5 -top-1.5 rounded-full border-2 border-[#0A0A0C] bg-red-500 px-1 py-0.5 text-center text-[7px] font-black text-white">0</span>
+        </span>
+      </div>
+
+      <section class="budgetiq-notification-summary-card relative overflow-hidden rounded-[28px] border p-5">
+        <div class="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-[#C1FF72]/10 blur-2xl"></div>
+        <div class="relative flex items-start justify-between gap-4">
+          <div class="flex min-w-0 items-center gap-3">
+            <span class="budgetiq-notification-summary-icon flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#C1FF72] text-black">
+              <span class="material-icons text-xl">campaign</span>
+            </span>
+            <div class="min-w-0">
+              <p class="text-[8px] font-black uppercase tracking-[0.18em] text-zinc-500">Unread updates</p>
+              <div class="mt-0.5 flex items-baseline gap-2">
+                <strong id="notificationUnreadCount" class="text-3xl font-black text-white">0</strong>
+                <span id="notificationMonth" class="truncate text-[9px] font-extrabold uppercase tracking-wider text-[#C1FF72]">July 2026</span>
+              </div>
+              <p id="notificationSummary" class="mt-1 text-[9px] font-semibold text-zinc-500">You are all caught up</p>
+            </div>
+          </div>
+          <button type="button" onclick="markAllBudgetIQNotificationsRead()"
+            class="shrink-0 rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-[8px] font-black uppercase tracking-wider text-zinc-300 transition-all hover:border-[#C1FF72]/30 hover:text-[#C1FF72] active:scale-95">
+            Mark read
+          </button>
+        </div>
+      </section>
+
+      <section class="budgetiq-notification-cloud-card rounded-2xl border p-3.5">
+        <div class="flex items-start gap-2.5">
+          <span class="material-icons mt-0.5 text-base text-sky-400">cloud_sync</span>
+          <div>
+            <p class="text-[9px] font-extrabold text-sky-300">Cloud-ready activity center</p>
+            <p class="mt-0.5 text-[8px] font-semibold leading-relaxed text-zinc-500">This screen uses activity saved on this device. Live updates from other users will activate when workspace cloud sync is connected.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="space-y-3">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xs font-extrabold uppercase tracking-widest text-gray-400">Latest activity</h2>
+          <span class="text-[8px] font-extrabold uppercase tracking-wider text-zinc-600">Newest first</span>
+        </div>
+        <div class="grid grid-cols-4 gap-1 rounded-xl border border-zinc-800 bg-[#18181B] p-1">
+          <button type="button" onclick="filterBudgetIQNotifications('all', this)"
+            class="notification-filter-btn bg-[#C1FF72] text-black text-[8px] font-black px-2 py-2 rounded-lg uppercase transition-all shadow-md">All</button>
+          <button type="button" onclick="filterBudgetIQNotifications('expense', this)"
+            class="notification-filter-btn text-gray-400 text-[8px] font-extrabold px-2 py-2 rounded-lg uppercase hover:text-white transition-all">Expenses</button>
+          <button type="button" onclick="filterBudgetIQNotifications('contribution', this)"
+            class="notification-filter-btn text-gray-400 text-[8px] font-extrabold px-2 py-2 rounded-lg uppercase hover:text-white transition-all">Payments</button>
+          <button type="button" onclick="filterBudgetIQNotifications('member', this)"
+            class="notification-filter-btn text-gray-400 text-[8px] font-extrabold px-2 py-2 rounded-lg uppercase hover:text-white transition-all">Members</button>
+        </div>
+        <div id="notificationActivityList" class="space-y-3"></div>
+      </section>
+    </main>
+
+    <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-[#0D0E12]/90 border-t border-zinc-800/80 backdrop-blur-md px-6 py-3 flex justify-between items-center z-40 rounded-t-3xl" aria-label="Primary navigation">
+      <a href="./dashboard.html" class="flex flex-col items-center gap-1 text-gray-500 hover:text-white transition-all">
+        <span class="material-icons text-xl">home</span><span class="text-[9px] font-bold uppercase tracking-wider">Home</span>
+      </a>
+      <a href="./plan.html" class="flex flex-col items-center gap-1 text-gray-500 hover:text-white transition-all">
+        <span class="material-icons text-xl">groups</span><span class="text-[9px] font-bold uppercase tracking-wider">Members</span>
+      </a>
+      <a href="./cart.html" class="flex flex-col items-center gap-1 text-gray-500 hover:text-white transition-all relative">
+        <span class="material-icons text-xl">receipt_long</span><span class="text-[9px] font-bold uppercase tracking-wider">Add Expense</span>
+      </a>
+      <a href="./profile.html" class="flex flex-col items-center gap-1 text-gray-500 hover:text-white transition-all">
+        <span class="material-icons text-xl">person</span><span class="text-[9px] font-bold uppercase tracking-wider">Profile</span>
+      </a>
+    </nav>
+
+    <div id="profileToast" class="budgetiq-notification-toast fixed bottom-24 left-1/2 -translate-x-1/2 bg-zinc-950 border border-zinc-800 text-[#C1FF72] text-[11px] font-extrabold px-5 py-3.5 rounded-full shadow-2xl flex items-center gap-2 whitespace-nowrap opacity-0 pointer-events-none translate-y-3 transition-all duration-300">
+      <span class="material-icons text-sm">done_all</span><span id="toastMessage">Notifications updated</span>
+    </div>
+
+    <div id="orderDetailModal" class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-6 hidden opacity-0 transition-opacity duration-300">
+      <div class="w-full max-w-sm bg-gradient-to-b from-zinc-800 to-black border border-zinc-800 rounded-[32px] p-6 space-y-4 shadow-2xl relative scale-95 transition-transform duration-300">
+        <button type="button" onclick="closeOrderDetailModal()" aria-label="Close activity details" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center">
+          <span class="material-icons text-sm text-gray-400">close</span>
+        </button>
+        <div class="pt-2 text-center">
+          <span id="modalActivityIcon" class="material-icons text-[#C1FF72] text-4xl">receipt_long</span>
+          <h3 id="modalTitle" class="text-sm font-extrabold text-white mt-1">Activity Details</h3>
+          <p id="modalMeta" class="text-[10px] text-gray-500 font-medium">Monthly activity</p>
+        </div>
+        <div class="bg-zinc-950 border border-zinc-800 p-4 rounded-2xl space-y-2 text-xs">
+          <div class="flex justify-between"><span class="text-gray-500">Amount</span><span id="modalPrice" class="text-white font-bold">AED 0</span></div>
+          <div class="flex justify-between gap-4"><span id="modalPersonLabel" class="text-gray-500">Purchased By</span><span id="modalPerson" class="truncate text-right text-white font-bold">Admin</span></div>
+          <div class="flex justify-between gap-4"><span id="modalDetailLabel" class="text-gray-500">Category</span><span id="modalDetail" class="truncate text-right text-white font-bold">Other</span></div>
+          <div class="flex justify-between gap-4"><span class="text-gray-500">Reference</span><span id="modalReference" class="text-right text-white font-bold tracking-wide">BIQ-0000</span></div>
+          <div class="flex justify-between"><span class="text-gray-500">Activity Status</span><span id="modalStatus" class="text-[#C1FF72] font-black uppercase tracking-wider">Recorded</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="sidebarBackdrop" class="absolute inset-0 bg-black/80 z-40 hidden opacity-0 transition-opacity duration-300"></div>
+  <aside id="sidebarMenu" class="absolute inset-y-0 left-0 w-80 bg-[#090A0E]/95 border-r border-white/[0.06] backdrop-blur-2xl z-50 transform -translate-x-full transition-transform duration-500 ease-out flex flex-col justify-between p-6 overflow-y-auto no-scrollbar" aria-label="Application menu">
+    <div class="space-y-5">
+      <div class="flex justify-between items-center pb-4 border-b border-white/[0.04]">
+        <div class="flex items-center gap-3">
+          <div id="budgetIQSidebarAvatar" class="w-10 h-10 bg-[#C1FF72] text-black text-sm font-black rounded-full flex items-center justify-center">A</div>
+          <div><h4 id="budgetIQSidebarUser" class="text-xs font-extrabold text-white">Admin ⚡</h4><p class="text-[9px] text-gray-500 font-semibold">BudgetIQ Workspace</p></div>
+        </div>
+        <button id="closeSidebarBtn" aria-label="Close menu" class="w-8 h-8 rounded-full bg-white/[0.03] border border-white/[0.08] flex items-center justify-center text-gray-400 hover:text-white transition-all"><span class="material-icons text-sm">close</span></button>
+      </div>
+      <div class="flex bg-white/[0.03] border border-white/[0.06] focus-within:border-[#C1FF72]/40 rounded-xl p-1 transition-all">
+        <span class="material-icons text-gray-500 text-sm px-2 flex items-center">search</span>
+        <input id="screenSearch" onkeyup="searchScreens()" type="text" placeholder="Search" class="bg-transparent w-full outline-none py-2 text-[10px] font-bold uppercase tracking-wider placeholder-gray-600 text-white">
+      </div>
+      <div id="linksContainer" class="space-y-5 overflow-y-auto no-scrollbar pr-1 max-h-[440px]">
+        <div class="category-sec space-y-2">
+          <h4 class="text-[8px] font-black uppercase tracking-widest text-[#C1FF72]">User Core App</h4>
+          <div class="space-y-1 text-xs">
+            <a href="./dashboard.html" class="nav-link-item flex items-center justify-between py-2 px-3 text-gray-400 hover:text-[#C1FF72] rounded-xl hover:bg-white/[0.03] transition-all font-semibold group">
+              <span class="flex items-center gap-2 group-hover:translate-x-1.5 transition-transform"><span class="material-icons text-sm text-gray-500 group-hover:text-[#C1FF72]">home</span> Home Dashboard</span>
+            </a>
+          </div>
+        </div>
+        <div class="category-sec space-y-2">
+          <h4 class="text-[8px] font-black uppercase tracking-widest text-purple-400">Profile &amp; History</h4>
+          <div class="space-y-1 text-xs">
+            <a href="./profile.html" class="nav-link-item flex items-center justify-between py-2 px-3 text-gray-400 hover:text-[#C1FF72] rounded-xl hover:bg-white/[0.03] transition-all font-semibold group">
+              <span class="flex items-center gap-2 group-hover:translate-x-1.5 transition-transform"><span class="material-icons text-sm text-gray-500 group-hover:text-[#C1FF72]">person</span> Profile</span>
+            </a>
+            <a href="./history.html" class="nav-link-item flex items-center justify-between py-2 px-3 text-gray-400 hover:text-[#C1FF72] rounded-xl hover:bg-white/[0.03] transition-all font-semibold group">
+              <span class="flex items-center gap-2 group-hover:translate-x-1.5 transition-transform"><span class="material-icons text-sm text-gray-500 group-hover:text-[#C1FF72]">history</span> History</span>
+            </a>
+            <a href="./notifications.html" class="nav-link-item flex items-center justify-between py-2 px-3 text-[#C1FF72] rounded-xl bg-white/[0.03] transition-all font-semibold group">
+              <span class="flex items-center gap-2"><span class="material-icons text-sm text-[#C1FF72]">notifications</span> Notifications</span>
+              <span data-budgetiq-notification-badge class="budgetiq-notification-badge hidden rounded-full bg-red-500 px-1.5 py-0.5 text-center text-[7px] font-black text-white">0</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pt-4 border-t border-white/[0.04] flex items-center justify-between text-[10px] text-gray-500 font-semibold uppercase tracking-wider">
+      <span id="budgetIQSidebarFooterUser">Admin</span><span>v1.0.8 ⚡</span>
+    </div>
+  </aside>
+</body>
+
+</html>
