@@ -4302,7 +4302,7 @@ if (document.readyState === 'loading') {
  * ------------------------------------------------------------------ */
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", function () {
-    navigator.serviceWorker.register("sw.js?v=67").catch(function (err) {
+    navigator.serviceWorker.register("sw.js?v=68").catch(function (err) {
       console.warn("[PWA] Service worker registration failed:", err);
     });
   });
