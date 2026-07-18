@@ -18,7 +18,7 @@
   <link rel="stylesheet" href="css/tailwind.min.css?v=1">
   <link rel="preload" href="fonts/material-icons.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="css/style.css?v=4">
-  <script defer src="js/budgetiq-core.js?v=63"></script>
+  <script defer src="js/budgetiq-core.js?v=64"></script>
 </head>
 
 <body class="bg-[#0A0A0C] min-h-screen flex items-center justify-center relative">
@@ -53,7 +53,7 @@
       <div class="bg-zinc-900/60 border border-zinc-800 rounded-[28px] p-5 space-y-4">
         <div class="flex justify-between items-start">
           <div>
-            <h3 class="text-lg font-extrabold text-white"><span id="memberTotalCount">10</span> Members</h3>
+            <h3 class="text-lg font-extrabold text-white"><span id="memberTotalCount">0</span> Members</h3>
             <p class="text-[10px] text-gray-500 font-semibold mt-0.5"><span id="memberMonthSummary">July 2026</span> contribution status</p>
           </div>
           <div class="flex items-center gap-1.5">
@@ -70,7 +70,7 @@
         <div class="space-y-1.5">
           <div class="flex justify-between text-[10px] font-bold uppercase tracking-wider text-gray-400">
             <span><span id="memberPaidCount" class="text-emerald-400">0</span> Paid</span>
-            <span><span id="memberUnpaidCount" class="text-red-400">10</span> Not Paid</span>
+            <span><span id="memberUnpaidCount" class="text-red-400">0</span> Not Paid</span>
           </div>
           <div class="w-full h-2 bg-zinc-950 rounded-full overflow-hidden p-[2px] border border-zinc-800">
             <div id="memberPaidProgress" class="h-full bg-gradient-to-r from-emerald-500 to-[#C1FF72] rounded-full transition-all duration-300" style="width: 0%"></div>
@@ -79,7 +79,7 @@
         <div class="grid grid-cols-2 gap-2 border-t border-white/[0.06] pt-3">
           <div class="rounded-xl bg-black/20 px-3 py-2.5">
             <p id="memberContributionTypeLabel" class="text-[8px] font-black uppercase tracking-wider text-zinc-600">Per member</p>
-            <p id="memberContributionAmount" class="mt-1 text-xs font-black text-white">AED 1,000</p>
+            <p id="memberContributionAmount" class="mt-1 text-xs font-black text-white">AED 0</p>
           </div>
           <div class="rounded-xl bg-[#C1FF72]/[0.06] px-3 py-2.5">
             <p class="text-[8px] font-black uppercase tracking-wider text-zinc-600">Collected</p>
@@ -105,58 +105,13 @@
           </div>
 
           <div id="memberScrollList" class="h-[360px] overflow-y-auto px-3 no-scrollbar">
-            <div class="member-list-row flex items-center gap-3 border-b border-white/[0.055] py-3" data-member-id="1" data-status="paid">
-              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#C1FF72] text-[10px] font-black text-black">M1</span>
-              <span class="member-name min-w-0 flex-1 truncate text-xs font-extrabold text-white">Member 01</span>
-              <button type="button" onclick="toggleMemberPaid(this)" aria-label="Mark Member 01 paid or not paid" aria-pressed="true"
-                class="member-payment-toggle flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-[#C1FF72]/30 bg-[#C1FF72] text-black transition-all active:scale-90">
-                <span class="material-icons text-base">check</span>
-              </button>
-            </div>
-            <div class="member-list-row flex items-center gap-3 border-b border-white/[0.055] py-3" data-member-id="2" data-status="paid">
-              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-400/10 text-[10px] font-black text-emerald-400">M2</span>
-              <span class="member-name min-w-0 flex-1 truncate text-xs font-extrabold text-white">Member 02</span>
-              <button type="button" onclick="toggleMemberPaid(this)" aria-label="Mark Member 02 paid or not paid" aria-pressed="true" class="member-payment-toggle flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-[#C1FF72]/30 bg-[#C1FF72] text-black transition-all active:scale-90"><span class="material-icons text-base">check</span></button>
-            </div>
-            <div class="member-list-row flex items-center gap-3 border-b border-white/[0.055] py-3" data-member-id="3" data-status="paid">
-              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-sky-500/10 text-[10px] font-black text-sky-400">M3</span>
-              <span class="member-name min-w-0 flex-1 truncate text-xs font-extrabold text-white">Member 03</span>
-              <button type="button" onclick="toggleMemberPaid(this)" aria-label="Mark Member 03 paid or not paid" aria-pressed="true" class="member-payment-toggle flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-[#C1FF72]/30 bg-[#C1FF72] text-black transition-all active:scale-90"><span class="material-icons text-base">check</span></button>
-            </div>
-            <div class="member-list-row flex items-center gap-3 border-b border-white/[0.055] py-3" data-member-id="4" data-status="paid">
-              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-purple-500/10 text-[10px] font-black text-purple-400">M4</span>
-              <span class="member-name min-w-0 flex-1 truncate text-xs font-extrabold text-white">Member 04</span>
-              <button type="button" onclick="toggleMemberPaid(this)" aria-label="Mark Member 04 paid or not paid" aria-pressed="true" class="member-payment-toggle flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-[#C1FF72]/30 bg-[#C1FF72] text-black transition-all active:scale-90"><span class="material-icons text-base">check</span></button>
-            </div>
-            <div class="member-list-row flex items-center gap-3 border-b border-white/[0.055] py-3" data-member-id="5" data-status="paid">
-              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-[10px] font-black text-amber-400">M5</span>
-              <span class="member-name min-w-0 flex-1 truncate text-xs font-extrabold text-white">Member 05</span>
-              <button type="button" onclick="toggleMemberPaid(this)" aria-label="Mark Member 05 paid or not paid" aria-pressed="true" class="member-payment-toggle flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-[#C1FF72]/30 bg-[#C1FF72] text-black transition-all active:scale-90"><span class="material-icons text-base">check</span></button>
-            </div>
-            <div class="member-list-row flex items-center gap-3 border-b border-white/[0.055] py-3" data-member-id="6" data-status="paid">
-              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-pink-500/10 text-[10px] font-black text-pink-400">M6</span>
-              <span class="member-name min-w-0 flex-1 truncate text-xs font-extrabold text-white">Member 06</span>
-              <button type="button" onclick="toggleMemberPaid(this)" aria-label="Mark Member 06 paid or not paid" aria-pressed="true" class="member-payment-toggle flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-[#C1FF72]/30 bg-[#C1FF72] text-black transition-all active:scale-90"><span class="material-icons text-base">check</span></button>
-            </div>
-            <div class="member-list-row flex items-center gap-3 border-b border-white/[0.055] py-3" data-member-id="7" data-status="paid">
-              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-cyan-500/10 text-[10px] font-black text-cyan-400">M7</span>
-              <span class="member-name min-w-0 flex-1 truncate text-xs font-extrabold text-white">Member 07</span>
-              <button type="button" onclick="toggleMemberPaid(this)" aria-label="Mark Member 07 paid or not paid" aria-pressed="true" class="member-payment-toggle flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-[#C1FF72]/30 bg-[#C1FF72] text-black transition-all active:scale-90"><span class="material-icons text-base">check</span></button>
-            </div>
-            <div class="member-list-row flex items-center gap-3 border-b border-white/[0.055] py-3" data-member-id="8" data-status="paid">
-              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-500/10 text-[10px] font-black text-indigo-400">M8</span>
-              <span class="member-name min-w-0 flex-1 truncate text-xs font-extrabold text-white">Member 08</span>
-              <button type="button" onclick="toggleMemberPaid(this)" aria-label="Mark Member 08 paid or not paid" aria-pressed="true" class="member-payment-toggle flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-[#C1FF72]/30 bg-[#C1FF72] text-black transition-all active:scale-90"><span class="material-icons text-base">check</span></button>
-            </div>
-            <div class="member-list-row flex items-center gap-3 border-b border-white/[0.055] py-3" data-member-id="9" data-status="unpaid">
-              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-orange-500/10 text-[10px] font-black text-orange-400">M9</span>
-              <span class="member-name min-w-0 flex-1 truncate text-xs font-extrabold text-white">Member 09</span>
-              <button type="button" onclick="toggleMemberPaid(this)" aria-label="Mark Member 09 paid or not paid" aria-pressed="false" class="member-payment-toggle flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-red-500/25 bg-red-500/10 text-red-400 transition-all active:scale-90"><span class="material-icons text-base">close</span></button>
-            </div>
-            <div class="member-list-row flex items-center gap-3 py-3" data-member-id="10" data-status="unpaid">
-              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-red-500/10 text-[10px] font-black text-red-400">M10</span>
-              <span class="member-name min-w-0 flex-1 truncate text-xs font-extrabold text-white">Member 10</span>
-              <button type="button" onclick="toggleMemberPaid(this)" aria-label="Mark Member 10 paid or not paid" aria-pressed="false" class="member-payment-toggle flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-red-500/25 bg-red-500/10 text-red-400 transition-all active:scale-90"><span class="material-icons text-base">close</span></button>
+            <div id="memberEmptyState" class="flex h-full flex-col items-center justify-center px-6 text-center">
+              <span class="flex h-12 w-12 items-center justify-center rounded-2xl border border-dashed border-zinc-700 bg-zinc-900/60 text-zinc-600">
+                <span class="material-icons text-2xl">group_add</span>
+              </span>
+              <p class="mt-3 text-[10px] font-black uppercase tracking-wider text-zinc-400">No members yet</p>
+              <p class="mt-1 max-w-[220px] text-[9px] font-semibold leading-relaxed text-zinc-600">Add your first real member to start this workspace.</p>
+              <button type="button" onclick="openAddMemberModal()" class="mt-4 rounded-xl bg-[#C1FF72] px-4 py-2.5 text-[9px] font-black uppercase tracking-wider text-black active:scale-95">Add first member</button>
             </div>
           </div>
         </div>
@@ -173,136 +128,6 @@
           <span class="material-icons text-base text-zinc-600">chevron_right</span>
         </button>
       </section>
-      <!-- 3. Members Grid -->
-      <div class="hidden">
-        <div class="flex justify-between items-center">
-          <h3 class="text-xs font-extrabold uppercase tracking-widest text-gray-400">All members</h3>
-          <span class="text-[10px] font-bold text-gray-500">July 2026</span>
-        </div>
-        <!-- Member Cards Grid -->
-        <div class="grid grid-cols-2 gap-3.5">
-          <!-- Member 01 -->
-          <button onclick="triggerToast('Member 01 selected', 'person', 'text-[#C1FF72]')"
-            class="bg-zinc-900/60 hover:bg-zinc-900 border border-zinc-800 rounded-2xl p-4 flex flex-col justify-between h-28 text-left cursor-pointer transition-all active:scale-95">
-            <div class="flex justify-between items-start">
-              <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-[#C1FF72] text-[10px] font-black text-black">M1</span>
-              <span class="rounded-full bg-emerald-400/10 px-2 py-1 text-[8px] font-extrabold uppercase text-emerald-400">Paid</span>
-            </div>
-            <div>
-              <h4 class="text-xs font-extrabold text-white">Member 01</h4>
-              <p class="mt-1 text-[9px] font-semibold text-gray-500">AED 1,000 of 1,000</p>
-            </div>
-          </button>
-          <!-- Member 02 -->
-          <button onclick="triggerToast('Member 02 selected', 'person', 'text-[#C1FF72]')"
-            class="bg-zinc-900/60 hover:bg-zinc-900 border border-zinc-800 rounded-2xl p-4 flex flex-col justify-between h-28 text-left cursor-pointer transition-all active:scale-95">
-            <div class="flex justify-between items-start">
-              <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-400/10 text-[10px] font-black text-emerald-400">M2</span>
-              <span class="rounded-full bg-emerald-400/10 px-2 py-1 text-[8px] font-extrabold uppercase text-emerald-400">Paid</span>
-            </div>
-            <div>
-              <h4 class="text-xs font-extrabold text-white">Member 02</h4>
-              <p class="mt-1 text-[9px] font-semibold text-gray-500">AED 1,000 of 1,000</p>
-            </div>
-          </button>
-          <!-- Member 03 -->
-          <button onclick="triggerToast('Member 03 selected', 'person', 'text-[#C1FF72]')"
-            class="bg-zinc-900/60 hover:bg-zinc-900 border border-zinc-800 rounded-2xl p-4 flex flex-col justify-between h-28 text-left cursor-pointer transition-all active:scale-95">
-            <div class="flex justify-between items-start">
-              <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-sky-500/10 text-[10px] font-black text-sky-400">M3</span>
-              <span class="rounded-full bg-emerald-400/10 px-2 py-1 text-[8px] font-extrabold uppercase text-emerald-400">Paid</span>
-            </div>
-            <div>
-              <h4 class="text-xs font-extrabold text-white">Member 03</h4>
-              <p class="mt-1 text-[9px] font-semibold text-gray-500">AED 1,000 of 1,000</p>
-            </div>
-          </button>
-          <!-- Member 04 -->
-          <button onclick="triggerToast('Member 04 selected', 'person', 'text-[#C1FF72]')"
-            class="bg-zinc-900/60 hover:bg-zinc-900 border border-zinc-800 rounded-2xl p-4 flex flex-col justify-between h-28 text-left cursor-pointer transition-all active:scale-95">
-            <div class="flex justify-between items-start">
-              <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-purple-500/10 text-[10px] font-black text-purple-400">M4</span>
-              <span class="rounded-full bg-emerald-400/10 px-2 py-1 text-[8px] font-extrabold uppercase text-emerald-400">Paid</span>
-            </div>
-            <div>
-              <h4 class="text-xs font-extrabold text-white">Member 04</h4>
-              <p class="mt-1 text-[9px] font-semibold text-gray-500">AED 1,000 of 1,000</p>
-            </div>
-          </button>
-          <!-- Member 05 -->
-          <button onclick="triggerToast('Member 05 selected', 'person', 'text-[#C1FF72]')"
-            class="bg-zinc-900/60 hover:bg-zinc-900 border border-zinc-800 rounded-2xl p-4 flex flex-col justify-between h-28 text-left cursor-pointer transition-all active:scale-95">
-            <div class="flex justify-between items-start">
-              <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-500/10 text-[10px] font-black text-amber-400">M5</span>
-              <span class="rounded-full bg-emerald-400/10 px-2 py-1 text-[8px] font-extrabold uppercase text-emerald-400">Paid</span>
-            </div>
-            <div>
-              <h4 class="text-xs font-extrabold text-white">Member 05</h4>
-              <p class="mt-1 text-[9px] font-semibold text-gray-500">AED 1,000 of 1,000</p>
-            </div>
-          </button>
-          <!-- Member 06 -->
-          <button onclick="triggerToast('Member 06 selected', 'person', 'text-[#C1FF72]')"
-            class="bg-zinc-900/60 hover:bg-zinc-900 border border-zinc-800 rounded-2xl p-4 flex flex-col justify-between h-28 text-left cursor-pointer transition-all active:scale-95">
-            <div class="flex justify-between items-start">
-              <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-pink-500/10 text-[10px] font-black text-pink-400">M6</span>
-              <span class="rounded-full bg-emerald-400/10 px-2 py-1 text-[8px] font-extrabold uppercase text-emerald-400">Paid</span>
-            </div>
-            <div>
-              <h4 class="text-xs font-extrabold text-white">Member 06</h4>
-              <p class="mt-1 text-[9px] font-semibold text-gray-500">AED 1,000 of 1,000</p>
-            </div>
-          </button>
-          <!-- Member 07 -->
-          <button onclick="triggerToast('Member 07 selected', 'person', 'text-[#C1FF72]')"
-            class="bg-zinc-900/60 hover:bg-zinc-900 border border-zinc-800 rounded-2xl p-4 flex flex-col justify-between h-28 text-left cursor-pointer transition-all active:scale-95">
-            <div class="flex justify-between items-start">
-              <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-cyan-500/10 text-[10px] font-black text-cyan-400">M7</span>
-              <span class="rounded-full bg-emerald-400/10 px-2 py-1 text-[8px] font-extrabold uppercase text-emerald-400">Paid</span>
-            </div>
-            <div>
-              <h4 class="text-xs font-extrabold text-white">Member 07</h4>
-              <p class="mt-1 text-[9px] font-semibold text-gray-500">AED 1,000 of 1,000</p>
-            </div>
-          </button>
-          <!-- Member 08 -->
-          <button onclick="triggerToast('Member 08 selected', 'person', 'text-[#C1FF72]')"
-            class="bg-zinc-900/60 hover:bg-zinc-900 border border-zinc-800 rounded-2xl p-4 flex flex-col justify-between h-28 text-left cursor-pointer transition-all active:scale-95">
-            <div class="flex justify-between items-start">
-              <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-500/10 text-[10px] font-black text-indigo-400">M8</span>
-              <span class="rounded-full bg-emerald-400/10 px-2 py-1 text-[8px] font-extrabold uppercase text-emerald-400">Paid</span>
-            </div>
-            <div>
-              <h4 class="text-xs font-extrabold text-white">Member 08</h4>
-              <p class="mt-1 text-[9px] font-semibold text-gray-500">AED 1,000 of 1,000</p>
-            </div>
-          </button>
-          <!-- Member 09 -->
-          <button onclick="triggerToast('Member 09 selected', 'person', 'text-orange-400')"
-            class="bg-orange-500/[0.04] hover:bg-orange-500/[0.07] border border-orange-500/20 rounded-2xl p-4 flex flex-col justify-between h-28 text-left cursor-pointer transition-all active:scale-95">
-            <div class="flex justify-between items-start">
-              <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-orange-500/10 text-[10px] font-black text-orange-400">M9</span>
-              <span class="rounded-full bg-orange-500/10 px-2 py-1 text-[8px] font-extrabold uppercase text-orange-400">Partial</span>
-            </div>
-            <div>
-              <h4 class="text-xs font-extrabold text-white">Member 09</h4>
-              <p class="mt-1 text-[9px] font-semibold text-gray-500">AED 500 of 1,000</p>
-            </div>
-          </button>
-          <!-- Member 10 -->
-          <button onclick="triggerToast('Member 10 selected', 'person', 'text-red-400')"
-            class="bg-red-500/[0.04] hover:bg-red-500/[0.07] border border-red-500/20 rounded-2xl p-4 flex flex-col justify-between h-28 text-left cursor-pointer transition-all active:scale-95">
-            <div class="flex justify-between items-start">
-              <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-red-500/10 text-[10px] font-black text-red-400">M10</span>
-              <span class="rounded-full bg-red-500/10 px-2 py-1 text-[8px] font-extrabold uppercase text-red-400">Not Paid</span>
-            </div>
-            <div>
-              <h4 class="text-xs font-extrabold text-white">Member 10</h4>
-              <p class="mt-1 text-[9px] font-semibold text-gray-500">AED 0 of 1,000</p>
-            </div>
-          </button>
-        </div>
-      </div>
     </div>
     <!-- 5. Bottom Navigation Bar -->
     <div
@@ -360,7 +185,7 @@
             </span>
             <div>
               <p class="text-[8px] font-black uppercase tracking-wider text-zinc-600">Payment plan</p>
-              <p id="memberContributionActiveCount" class="mt-0.5 text-[10px] font-extrabold text-white">10 active members</p>
+              <p id="memberContributionActiveCount" class="mt-0.5 text-[10px] font-extrabold text-white">0 active members</p>
             </div>
           </div>
           <span class="text-[8px] font-bold text-zinc-600">This month</span>
@@ -397,8 +222,8 @@
         </div>
 
         <div class="flex items-center justify-between gap-3 rounded-2xl border border-white/[0.06] bg-black/20 px-3.5 py-3">
-          <span id="memberContributionAssignedSummary" class="text-[9px] font-black text-[#C1FF72]">10 of 10 assigned</span>
-          <span id="memberContributionExpectedSummary" class="text-right text-[9px] font-black text-white">AED 10,000 expected</span>
+          <span id="memberContributionAssignedSummary" class="text-[9px] font-black text-[#C1FF72]">0 of 0 assigned</span>
+          <span id="memberContributionExpectedSummary" class="text-right text-[9px] font-black text-white">AED 0 expected</span>
         </div>
 
         <p id="memberContributionError" class="hidden rounded-xl border border-red-500/15 bg-red-500/[0.06] px-3 py-2.5 text-[9px] font-bold text-red-400">Check the payment plan and try again.</p>
@@ -476,7 +301,7 @@
             <span class="text-[9px] font-extrabold uppercase tracking-wider text-zinc-500">Choose member</span>
             <select id="editMemberSelect" onchange="prepareMemberRename()"
               class="w-full appearance-none rounded-2xl border border-zinc-800 bg-zinc-900 px-4 py-3 text-xs font-bold text-white outline-none focus:border-orange-500/40">
-              <option value="1">Member 01</option><option value="2">Member 02</option><option value="3">Member 03</option><option value="4">Member 04</option><option value="5">Member 05</option><option value="6">Member 06</option><option value="7">Member 07</option><option value="8">Member 08</option><option value="9">Member 09</option><option value="10">Member 10</option>
+              <option value="" selected disabled>No members yet</option>
             </select>
           </label>
           <label class="block space-y-1.5">
@@ -566,7 +391,7 @@
     <div
       class="pt-4 border-t border-white/[0.04] flex items-center justify-between text-[10px] text-gray-500 font-semibold uppercase tracking-wider">
       <span id="budgetIQSidebarFooterUser">Admin</span>
-      <span>v1.0.8 ⚡</span>
+      <span>v1.0.9 ⚡</span>
     </div>
   </div>
 </body>

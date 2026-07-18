@@ -18,7 +18,7 @@
   <link rel="stylesheet" href="css/tailwind.min.css?v=1">
   <link rel="preload" href="fonts/material-icons.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="css/style.css?v=4">
-  <script defer src="js/budgetiq-core.js?v=63"></script>
+  <script defer src="js/budgetiq-core.js?v=64"></script>
 </head>
 
 <body class="bg-[#0A0A0C] min-h-screen flex items-center justify-center relative">
@@ -89,7 +89,7 @@
           <div class="mt-5 grid grid-cols-3 gap-2 border-t border-white/20 pt-4">
             <div>
               <p class="text-[8px] font-bold uppercase tracking-wider text-white/60">Expected</p>
-              <p id="fundExpected" class="mt-1 text-xs font-extrabold text-white">AED 10,000</p>
+              <p id="fundExpected" class="mt-1 text-xs font-extrabold text-white">AED 0</p>
             </div>
             <div class="border-x border-white/15 px-3">
               <p class="text-[8px] font-bold uppercase tracking-wider text-white/60">Collected</p>
@@ -117,7 +117,7 @@
         <div class="flex justify-between items-center">
           <h3 class="text-sm font-extrabold uppercase tracking-widest text-gray-400">Payment status</h3>
           <span
-            class="rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1.5 text-[9px] font-extrabold uppercase tracking-wider text-zinc-400"><span id="fundMemberTotal">10</span> members</span>
+            class="rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1.5 text-[9px] font-extrabold uppercase tracking-wider text-zinc-400"><span id="fundMemberTotal">0</span> members</span>
         </div>
         <!-- Compact contribution summary card -->
         <div
@@ -134,14 +134,14 @@
               </span>
               <span
                 class="inline-flex items-center gap-1.5 rounded-full bg-red-500/10 px-2 py-1 text-[8px] font-black uppercase tracking-wide text-red-400">
-                <span class="h-1.5 w-1.5 rounded-full bg-red-400"></span><span id="fundUnpaidCount">10</span> not paid
+                <span class="h-1.5 w-1.5 rounded-full bg-red-400"></span><span id="fundUnpaidCount">0</span> not paid
               </span>
             </div>
             <div class="mt-2 flex items-baseline gap-1.5">
-              <h4 id="fundAmountLeft" class="text-lg font-black tracking-tight text-white">AED 10,000</h4>
+              <h4 id="fundAmountLeft" class="text-lg font-black tracking-tight text-white">AED 0</h4>
               <span class="text-[8px] font-black uppercase tracking-wider text-orange-400">left</span>
             </div>
-            <p class="mt-0.5 text-[9px] font-semibold text-zinc-500">To complete the <span id="fundTotalTarget">AED 10,000</span> total</p>
+            <p class="mt-0.5 text-[9px] font-semibold text-zinc-500">To complete the <span id="fundTotalTarget">AED 0</span> total</p>
             <div class="mt-2 h-1 overflow-hidden rounded-full bg-white/[0.06]">
               <div id="fundStatusProgress" class="h-full rounded-full bg-gradient-to-r from-[#C1FF72] to-emerald-400 transition-[width] duration-300" style="width: 0%"></div>
             </div>
@@ -461,7 +461,7 @@
     <div
       class="pt-4 border-t border-white/[0.04] flex items-center justify-between text-[10px] text-gray-500 font-semibold uppercase tracking-wider">
       <span id="budgetIQSidebarFooterUser">Admin</span>
-      <span>v1.0.8 ⚡</span>
+      <span>v1.0.9 ⚡</span>
     </div>
   </div>
 </body>

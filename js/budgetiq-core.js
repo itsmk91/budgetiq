@@ -21,7 +21,7 @@ Based on the original Askbootstrap mobile template.
         [selectedMonth]: isLegacyPaymentMap ? legacyPayments : {}
       }));
     }
-    localStorage.setItem(schemaKey, '2');
+    localStorage.setItem(schemaKey, '3');
   } catch (error) {
     // The UI will show a save error if iPhone storage is unavailable.
   }
@@ -217,7 +217,7 @@ function escapeBudgetIQHtml(value) {
 }
 
 function getBudgetIQBuyerMembers() {
-  let ids = Array.from({ length: 10 }, (_, index) => String(index + 1));
+  let ids = [];
   let names = {};
   try {
     const savedIds = JSON.parse(localStorage.getItem('budgetiq-member-ids') || '[]');
@@ -225,7 +225,7 @@ function getBudgetIQBuyerMembers() {
     if (Array.isArray(savedIds) && savedIds.length) ids = [...new Set(savedIds.map(String).filter(Boolean))];
     if (savedNames && typeof savedNames === 'object' && !Array.isArray(savedNames)) names = savedNames;
   } catch (error) {
-    // Use the default ten active members when saved member data is unavailable.
+    // Keep the buyer list empty when saved member data is unavailable.
   }
   return ids.map((id, index) => ({
     id,
@@ -745,14 +745,19 @@ function renderBuyerSelectionMembers() {
   const list = document.getElementById('buyerSelectionList');
   if (!list) return;
   const members = getBudgetIQBuyerMembers();
-  list.innerHTML = members.map((member, index) => `
+  list.innerHTML = members.length ? members.map((member, index) => `
     <label class="flex cursor-pointer items-center gap-2.5 rounded-xl border border-zinc-800 bg-zinc-900/60 px-3 py-2 transition-all hover:border-purple-500/30">
       <input type="radio" name="expenseBuyer" value="${escapeBudgetIQHtml(member.id)}"
         ${expensePendingBuyerId === member.id ? 'checked' : ''} onchange="selectPendingExpenseBuyer('${escapeBudgetIQHtml(member.id)}')"
         class="buyer-radio h-4 w-4 accent-[#C1FF72]" />
       <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-purple-500/10 text-[9px] font-black text-purple-400">M${index + 1}</span>
       <span class="min-w-0 flex-1 truncate text-[10px] font-bold text-white">${escapeBudgetIQHtml(member.name)}</span>
-    </label>`).join('');
+    </label>`).join('') : `
+    <div class="rounded-2xl border border-dashed border-zinc-800 bg-zinc-900/40 px-5 py-8 text-center">
+      <span class="material-icons text-2xl text-zinc-700">group_add</span>
+      <p class="mt-2 text-[9px] font-black uppercase tracking-wider text-zinc-500">No members available</p>
+      <p class="mt-1 text-[8px] font-semibold text-zinc-600">Add a member before recording an expense.</p>
+    </div>`;
 }
 
 function selectPendingExpenseBuyer(memberId) {
@@ -1544,6 +1549,7 @@ const memberUnpaidCount = document.getElementById('memberUnpaidCount');
 const memberPaidProgress = document.getElementById('memberPaidProgress');
 const memberTotalCount = document.getElementById('memberTotalCount');
 const memberScrollList = document.getElementById('memberScrollList');
+const memberEmptyState = document.getElementById('memberEmptyState');
 const addMemberModal = document.getElementById('addMemberModal');
 const addMemberNameInput = document.getElementById('addMemberNameInput');
 const editMemberModal = document.getElementById('editMemberModal');
@@ -1614,6 +1620,7 @@ function addMemberSelectOption(id, name) {
   option.value = String(id);
   option.textContent = name;
   editMemberSelect.appendChild(option);
+  if (!editMemberSelect.value) editMemberSelect.value = String(id);
 }
 
 function setMemberPaymentAppearance(row, paid) {
@@ -1632,13 +1639,16 @@ function setMemberPaymentAppearance(row, paid) {
 }
 
 function updateMemberPaymentSummary() {
-  if (!budgetIQMemberRows.length) return;
   const paid = budgetIQMemberRows.filter((row) => row.dataset.status === 'paid').length;
   const unpaid = budgetIQMemberRows.length - paid;
+  const paymentPercent = budgetIQMemberRows.length
+    ? Math.round((paid / budgetIQMemberRows.length) * 100)
+    : 0;
   if (memberTotalCount) memberTotalCount.innerText = String(budgetIQMemberRows.length);
   if (memberPaidCount) memberPaidCount.innerText = String(paid);
   if (memberUnpaidCount) memberUnpaidCount.innerText = String(unpaid);
-  if (memberPaidProgress) memberPaidProgress.style.width = `${Math.round((paid / budgetIQMemberRows.length) * 100)}%`;
+  if (memberPaidProgress) memberPaidProgress.style.width = `${paymentPercent}%`;
+  if (memberEmptyState) memberEmptyState.classList.toggle('hidden', budgetIQMemberRows.length > 0);
   const contributionTypeLabel = document.getElementById('memberContributionTypeLabel');
   const contributionLabel = document.getElementById('memberContributionAmount');
   const collectedLabel = document.getElementById('memberCollectedAmount');
@@ -1734,7 +1744,7 @@ function recordBudgetIQContributionActivity(memberId, memberName, paid) {
 }
 
 function loadBudgetIQMembers() {
-  if (!budgetIQMemberRows.length) return;
+  if (!memberScrollList) return;
   let names = {};
   let payments = {};
   let savedIds = [];
@@ -1774,7 +1784,10 @@ function loadBudgetIQMembers() {
 }
 
 function applyBudgetIQMemberPaymentsForMonth() {
-  if (!budgetIQMemberRows.length) return;
+  if (!budgetIQMemberRows.length) {
+    updateMemberPaymentSummary();
+    return;
+  }
   const payments = readBudgetIQPaymentsForMonth();
   budgetIQMemberRows.forEach((row) => {
     setMemberPaymentAppearance(row, payments[row.dataset.memberId] === true);
@@ -1879,6 +1892,11 @@ function prepareMemberRename() {
 
 function openEditMemberModal() {
   if (!editMemberModal) return;
+  if (!budgetIQMemberRows.length) {
+    triggerToast('Add a member first', 'person_add', 'text-amber-400');
+    openAddMemberModal();
+    return;
+  }
   editMemberModal.classList.remove('hidden');
   prepareMemberRename();
   requestAnimationFrame(() => {
@@ -1932,8 +1950,8 @@ function saveMemberRename() {
 }
 
 // Keep the Home summary aligned with the member records saved on the Members page.
-const BUDGETIQ_DEFAULT_MEMBER_IDS = Array.from({ length: 10 }, (_, index) => String(index + 1));
-const BUDGETIQ_CONTRIBUTION_PER_MEMBER = 1000;
+const BUDGETIQ_DEFAULT_MEMBER_IDS = [];
+const BUDGETIQ_CONTRIBUTION_PER_MEMBER = 0;
 const BUDGETIQ_FIXED_EXPENSES = 0;
 const BUDGETIQ_MONTHLY_EXPECTED_KEY = 'budgetiq-monthly-expected-amounts';
 const BUDGETIQ_MONTHLY_CONTRIBUTION_KEY = 'budgetiq-monthly-contribution-per-member';
@@ -2027,7 +2045,7 @@ function readBudgetIQOrderedMemberIds() {
       return [...new Set(storedIds.map(String).filter(Boolean))];
     }
   } catch (error) {
-    // Use the default member order when stored member ids are unavailable.
+    // Keep the workspace empty when stored member ids are unavailable.
   }
   return [...BUDGETIQ_DEFAULT_MEMBER_IDS];
 }
@@ -2167,7 +2185,7 @@ function readBudgetIQRecordedExpenseTotal() {
 }
 
 function readBudgetIQMemberSummary() {
-  let ids = BUDGETIQ_DEFAULT_MEMBER_IDS;
+  let ids = [...BUDGETIQ_DEFAULT_MEMBER_IDS];
   let payments = {};
 
   try {
@@ -2180,7 +2198,7 @@ function readBudgetIQMemberSummary() {
       payments = storedPayments;
     }
   } catch (error) {
-    // Use the ten-member default summary when saved data is unavailable or invalid.
+    // Keep the workspace summary empty when saved data is unavailable or invalid.
   }
 
   const paid = ids.filter((id) => payments[id] === true).length;
@@ -2320,6 +2338,11 @@ function openMemberContributionModal() {
   const errorLabel = document.getElementById('memberContributionError');
   const groupRows = document.getElementById('memberContributionGroupRows');
   if (!modal || !input) return;
+  if (!readBudgetIQOrderedMemberIds().length) {
+    triggerToast('Add a member before setting payments', 'person_add', 'text-amber-400');
+    openAddMemberModal();
+    return;
+  }
 
   input.value = String(Math.round(readBudgetIQContributionPerMember()));
   if (monthLabel) monthLabel.textContent = getBudgetIQCurrentMonthName();
@@ -3912,7 +3935,7 @@ if (splashUserSelect) {
  * ------------------------------------------------------------------ */
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", function () {
-    navigator.serviceWorker.register("sw.js?v=63").catch(function (err) {
+    navigator.serviceWorker.register("sw.js?v=64").catch(function (err) {
       console.warn("[PWA] Service worker registration failed:", err);
     });
   });
