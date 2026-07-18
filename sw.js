@@ -6,7 +6,7 @@
  *   - Everything : cache-first  (fast load, works offline after first visit)
  * Bump CACHE_VERSION whenever you change the template to push updates.
  */
-const CACHE_VERSION = 'budgetiq-v69-premium-add-user';
+const CACHE_VERSION = 'budgetiq-v70-icon-add-user';
 const APP_BASE = '/budgetiq/';
 
 // App shell — precached on install so the app opens offline right away.
@@ -22,7 +22,7 @@ const CORE_ASSETS = [
   `${APP_BASE}css/tailwind.min.css`,
   `${APP_BASE}css/tailwind.min.css?v=1`,
   `${APP_BASE}css/style.css?v=4`,
-  `${APP_BASE}js/budgetiq-core.js?v=69`,
+  `${APP_BASE}js/budgetiq-core.js?v=70`,
   `${APP_BASE}js/budgetiq-excel.js?v=62`,
   `${APP_BASE}fonts/material-icons.woff2`,
   `${APP_BASE}img/logo.png`,
