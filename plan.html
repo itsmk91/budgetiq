@@ -18,7 +18,7 @@
   <link rel="stylesheet" href="css/tailwind.min.css?v=1">
   <link rel="preload" href="fonts/material-icons.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="css/style.css?v=4">
-  <script defer src="js/budgetiq-core.js?v=64"></script>
+  <script defer src="js/budgetiq-core.js?v=65"></script>
 </head>
 
 <body class="bg-[#0A0A0C] min-h-screen flex items-center justify-center relative">
@@ -385,13 +385,17 @@
             </a>
           </div>
         </div>
+        <div class="category-sec space-y-2" data-budgetiq-admin-only>
+          <h4 class="text-[8px] font-black uppercase tracking-widest text-amber-400">Administration</h4>
+          <div class="space-y-1 text-xs"><a href="./settings.html" class="nav-link-item flex items-center justify-between py-2 px-3 text-gray-400 hover:text-[#C1FF72] rounded-xl hover:bg-white/[0.03] transition-all font-semibold group"><span class="flex items-center gap-2 group-hover:translate-x-1.5 transition-transform"><span class="material-icons text-sm text-gray-500 group-hover:text-[#C1FF72]">settings</span> Settings</span></a></div>
+        </div>
       </div>
     </div>
     <!-- Sidebar Footer -->
     <div
       class="pt-4 border-t border-white/[0.04] flex items-center justify-between text-[10px] text-gray-500 font-semibold uppercase tracking-wider">
       <span id="budgetIQSidebarFooterUser">Admin</span>
-      <span>v1.0.9 ⚡</span>
+      <span>v1.1.0 ⚡</span>
     </div>
   </div>
 </body>

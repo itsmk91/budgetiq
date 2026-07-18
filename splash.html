@@ -18,7 +18,7 @@
   <link rel="stylesheet" href="css/tailwind.min.css?v=1">
   <link rel="preload" href="fonts/material-icons.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="css/style.css?v=4">
-  <script defer src="js/budgetiq-core.js?v=64"></script>
+  <script defer src="js/budgetiq-core.js?v=65"></script>
 </head>
 
 <body class="bg-[#0A0A0C] min-h-screen flex items-center justify-center">
@@ -40,7 +40,7 @@
         <span class="text-xs font-bold tracking-widest text-gray-400">BudgetIQ.</span>
       </div>
 
-      <!-- Native mobile user selector: four fixed roles in the iPhone scroll picker -->
+      <!-- Native mobile user selector populated from Admin Settings -->
       <label
         class="relative flex min-w-[96px] items-center gap-1.5 rounded-full border border-white/[0.07] bg-white/[0.035] p-1.5 pr-2 shadow-[0_8px_24px_rgba(0,0,0,0.18)] backdrop-blur-xl transition-all active:scale-95">
         <span id="currentUserAvatar"
@@ -50,9 +50,6 @@
         <select id="splashUserSelect" aria-label="Choose user" onchange="requestSplashUserUnlock(this)"
           class="absolute inset-0 h-full w-full cursor-pointer opacity-0">
           <option value="admin" data-initial="A">Admin</option>
-          <option value="user-1" data-initial="U1">User 1</option>
-          <option value="user-2" data-initial="U2">User 2</option>
-          <option value="auditor" data-initial="FA">Financial Auditor</option>
         </select>
       </label>
     </div>
@@ -212,13 +209,17 @@
             </a>
           </div>
         </div>
+        <div class="category-sec space-y-2" data-budgetiq-admin-only>
+          <h4 class="text-[8px] font-black uppercase tracking-widest text-amber-400">Administration</h4>
+          <div class="space-y-1 text-xs"><a href="./settings.html" class="nav-link-item flex items-center justify-between py-2 px-3 text-gray-400 hover:text-[#C1FF72] rounded-xl hover:bg-white/[0.03] transition-all font-semibold group"><span class="flex items-center gap-2 group-hover:translate-x-1.5 transition-transform"><span class="material-icons text-sm text-gray-500 group-hover:text-[#C1FF72]">settings</span> Settings</span></a></div>
+        </div>
       </div>
     </div>
     <!-- Sidebar Footer -->
     <div
       class="pt-4 border-t border-white/[0.04] flex items-center justify-between text-[10px] text-gray-500 font-semibold uppercase tracking-wider">
       <span id="budgetIQSidebarFooterUser">Admin</span>
-      <span>v1.0.9 ⚡</span>
+      <span>v1.1.0 ⚡</span>
     </div>
   </div>
 </body>

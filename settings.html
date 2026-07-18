@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#0A0A0C">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="BudgetIQ">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="icon" href="img/logo.png" type="image/png">
+  <title>BudgetIQ Admin Settings</title>
+  <link rel="stylesheet" href="css/tailwind.min.css?v=1">
+  <link rel="preload" href="fonts/material-icons.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/style.css?v=4">
+  <script defer src="js/budgetiq-core.js?v=65"></script>
+</head>
+
+<body class="bg-[#0A0A0C] min-h-screen flex items-center justify-center relative">
+  <div class="w-full max-w-md min-h-screen bg-[#0A0A0C] text-white flex flex-col justify-between relative pb-24 select-none shadow-2xl overflow-hidden">
+    <div class="absolute top-0 right-0 h-64 w-64 rounded-full bg-[#C1FF72]/10 blur-[90px] pointer-events-none"></div>
+    <div class="absolute bottom-20 left-0 h-64 w-64 rounded-full bg-purple-500/10 blur-[90px] pointer-events-none"></div>
+
+    <header class="ps-6 pt-6 pe-6 flex justify-between items-center z-20 backdrop-blur-md">
+      <button id="hamburgerBtn" aria-label="Open menu" class="w-11 h-11 rounded-2xl bg-white/[0.03] border border-white/[0.08] flex items-center justify-center text-gray-400 hover:text-[#C1FF72] hover:border-[#C1FF72]/40 transition-all duration-300 active:scale-95 shadow-md">
+        <span class="material-icons text-xl">menu</span>
+      </button>
+      <div class="flex items-center gap-1.5">
+        <img src="img/budgetiq-logo.png" alt="BudgetIQ logo" class="w-6 h-6 rounded-md object-contain">
+        <span class="text-xs font-black tracking-widest text-white">BudgetIQ.</span>
+      </div>
+      <div id="profileHeaderAvatar" class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#C1FF72]/10 to-emerald-500/10 border border-[#C1FF72]/20 flex items-center justify-center text-[#C1FF72] font-black text-sm">A</div>
+    </header>
+
+    <main class="flex-grow overflow-y-auto no-scrollbar p-6 space-y-6 z-10">
+      <section class="flex items-end justify-between">
+        <div>
+          <p class="text-[9px] font-black uppercase tracking-[0.2em] text-[#C1FF72]">Admin control</p>
+          <h1 class="mt-1 text-2xl font-extrabold tracking-tight text-white">Settings</h1>
+          <p class="mt-1 text-[9px] font-semibold text-zinc-500">Manage users, permissions and workspace safety.</p>
+        </div>
+        <span class="flex h-11 w-11 items-center justify-center rounded-2xl border border-[#C1FF72]/20 bg-[#C1FF72]/10 text-[#C1FF72]"><span class="material-icons text-xl">admin_panel_settings</span></span>
+      </section>
+
+      <section class="rounded-[28px] border border-white/[0.08] bg-gradient-to-br from-[#18181B] to-black p-5 shadow-lg">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <p class="text-[8px] font-black uppercase tracking-[0.18em] text-zinc-500">Workspace access</p>
+            <div class="mt-1 flex items-baseline gap-2"><strong id="settingsUserCount" class="text-3xl font-black text-white">1</strong><span class="text-[9px] font-black uppercase text-[#C1FF72]">active users</span></div>
+            <p class="mt-1 text-[8px] font-semibold leading-relaxed text-zinc-600">Admin decides what every user can view and change.</p>
+          </div>
+          <button type="button" onclick="openBudgetIQWorkspaceUserEditor()" class="flex shrink-0 items-center gap-1.5 rounded-xl bg-[#C1FF72] px-3 py-2.5 text-[8px] font-black uppercase tracking-wider text-black active:scale-95">
+            <span class="material-icons text-sm">person_add</span> Add user
+          </button>
+        </div>
+      </section>
+
+      <section class="space-y-3">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xs font-extrabold uppercase tracking-widest text-gray-400">Users &amp; permissions</h2>
+          <span class="text-[8px] font-black uppercase tracking-wider text-zinc-600">Admin only</span>
+        </div>
+        <div id="settingsUserList" class="space-y-3"></div>
+      </section>
+
+      <section class="space-y-3">
+        <h2 class="text-xs font-extrabold uppercase tracking-widest text-gray-400">Security</h2>
+        <div class="rounded-2xl border border-zinc-800 bg-[#18181B]/60 p-4">
+          <div class="flex items-start gap-3">
+            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-amber-400/20 bg-amber-400/10 text-amber-400"><span class="material-icons text-lg">lock_reset</span></span>
+            <div class="min-w-0 flex-1">
+              <h3 class="text-xs font-extrabold text-white">Password control</h3>
+              <p class="mt-1 text-[8px] font-semibold leading-relaxed text-zinc-600">Reset one user from their card, or require everyone to create a new password.</p>
+            </div>
+          </div>
+          <button type="button" onclick="resetAllBudgetIQWorkspacePasswords()" class="mt-4 w-full rounded-xl border border-amber-400/20 bg-amber-400/10 py-3 text-[8px] font-black uppercase tracking-wider text-amber-300 active:scale-[0.98]">Reset all passwords</button>
+        </div>
+      </section>
+
+      <section class="space-y-3">
+        <h2 class="text-xs font-extrabold uppercase tracking-widest text-gray-400">Backup &amp; restore</h2>
+        <div class="rounded-2xl border border-zinc-800 bg-[#18181B]/60 p-4">
+          <div class="flex items-start gap-3">
+            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-purple-400/20 bg-purple-400/10 text-purple-400"><span class="material-icons text-lg">restore</span></span>
+            <div class="min-w-0 flex-1">
+              <h3 class="text-xs font-extrabold text-white">Complete workspace recovery</h3>
+              <p class="mt-1 text-[8px] font-semibold leading-relaxed text-zinc-600">Protect members, payments, expenses, receipts, history, users and passwords.</p>
+              <p id="backupStatusLabel" class="mt-2 text-[8px] font-bold text-zinc-600">No backup exported yet</p>
+            </div>
+          </div>
+          <div class="mt-4 grid grid-cols-2 gap-2">
+            <button type="button" onclick="downloadBudgetIQBackup()" class="flex items-center justify-center gap-1.5 rounded-xl bg-[#C1FF72] px-3 py-3 text-[8px] font-black uppercase tracking-wider text-black active:scale-[0.98]"><span class="material-icons text-sm">download</span> Export</button>
+            <button type="button" onclick="openBudgetIQRestorePicker()" class="flex items-center justify-center gap-1.5 rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-3 text-[8px] font-black uppercase tracking-wider text-white active:scale-[0.98]"><span class="material-icons text-sm text-purple-400">upload</span> Restore</button>
+          </div>
+          <input id="budgetIQRestoreInput" type="file" accept="application/json,.json" class="hidden" onchange="restoreBudgetIQBackup(event)">
+        </div>
+      </section>
+
+      <section class="rounded-2xl border border-sky-400/15 bg-sky-400/[0.06] p-4">
+        <div class="flex items-start gap-3">
+          <span class="material-icons text-lg text-sky-400">cloud_sync</span>
+          <div>
+            <h3 class="text-[9px] font-extrabold text-sky-300">Cloud connection is the next stage</h3>
+            <p class="mt-1 text-[8px] font-semibold leading-relaxed text-zinc-500">These controls work on this device now. Secure company workspaces and live multi-user sync will connect these settings to the cloud.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-[#0D0E12]/90 border-t border-zinc-800/80 backdrop-blur-md px-6 py-3 flex justify-between items-center z-40 rounded-t-3xl" aria-label="Primary navigation">
+      <a href="./dashboard.html" class="flex flex-col items-center gap-1 text-gray-500 hover:text-white transition-all"><span class="material-icons text-xl">home</span><span class="text-[9px] font-bold uppercase tracking-wider">Home</span></a>
+      <a href="./plan.html" class="flex flex-col items-center gap-1 text-gray-500 hover:text-white transition-all"><span class="material-icons text-xl">groups</span><span class="text-[9px] font-bold uppercase tracking-wider">Members</span></a>
+      <a href="./cart.html" class="flex flex-col items-center gap-1 text-gray-500 hover:text-white transition-all"><span class="material-icons text-xl">receipt_long</span><span class="text-[9px] font-bold uppercase tracking-wider">Add Expense</span></a>
+      <a href="./settings.html" class="flex flex-col items-center gap-1 text-[#C1FF72] hover:text-white transition-all"><span class="material-icons text-xl">settings</span><span class="text-[9px] font-bold uppercase tracking-wider">Settings</span></a>
+    </nav>
+
+    <div id="profileToast" class="fixed bottom-24 left-1/2 -translate-x-1/2 bg-zinc-950 border border-zinc-800 text-[#C1FF72] text-[11px] font-extrabold px-5 py-3.5 rounded-full shadow-2xl flex items-center gap-2 whitespace-nowrap opacity-0 pointer-events-none translate-y-3 transition-all duration-300 z-50"><span class="material-icons text-sm">check_circle</span><span id="toastMessage">Settings updated</span></div>
+
+    <div id="settingsUserModal" class="fixed inset-0 z-50 hidden items-end justify-center bg-black/75 backdrop-blur-sm">
+      <form onsubmit="saveBudgetIQWorkspaceUser(event)" class="w-full max-w-md max-h-[88vh] overflow-y-auto no-scrollbar rounded-t-[32px] border-t border-white/[0.09] bg-[#121216] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.55)]">
+        <div class="flex items-center justify-between">
+          <div><p class="text-[8px] font-black uppercase tracking-[0.2em] text-[#C1FF72]">Admin control</p><h2 id="settingsUserModalTitle" class="mt-1 text-sm font-extrabold text-white">Create workspace user</h2></div>
+          <button type="button" onclick="closeBudgetIQWorkspaceUserEditor()" aria-label="Close user editor" class="flex h-8 w-8 items-center justify-center rounded-full bg-white/[0.04] text-zinc-500"><span class="material-icons text-sm">close</span></button>
+        </div>
+        <input id="settingsUserId" type="hidden">
+        <div class="mt-5 space-y-4">
+          <label class="block space-y-1.5"><span class="text-[8px] font-black uppercase tracking-wider text-zinc-500">Full name</span><input id="settingsUserName" type="text" required maxlength="60" placeholder="e.g. Mohammed" class="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-xs font-bold text-white outline-none placeholder:text-zinc-700 focus:border-[#C1FF72]/40"></label>
+          <label class="block space-y-1.5"><span class="text-[8px] font-black uppercase tracking-wider text-zinc-500">Starting role</span><select id="settingsUserRole" onchange="applyBudgetIQSettingsRolePreset()" class="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-xs font-bold text-white outline-none focus:border-[#C1FF72]/40"><option value="manager">Manager — full app control</option><option value="member">Team member — daily work</option><option value="viewer">Viewer — read only</option></select></label>
+          <div>
+            <div class="flex items-center justify-between"><span class="text-[8px] font-black uppercase tracking-wider text-zinc-500">Permissions</span><span class="text-[7px] font-bold text-zinc-700">Admin can change anytime</span></div>
+            <div class="mt-2 grid grid-cols-2 gap-2">
+              <label class="flex items-center gap-2 rounded-xl border border-white/[0.06] bg-black/20 p-3 text-[9px] font-bold text-zinc-300"><input id="settingsPermission-members" type="checkbox" style="accent-color:#C1FF72"> Members</label>
+              <label class="flex items-center gap-2 rounded-xl border border-white/[0.06] bg-black/20 p-3 text-[9px] font-bold text-zinc-300"><input id="settingsPermission-payments" type="checkbox" style="accent-color:#C1FF72"> Payments</label>
+              <label class="flex items-center gap-2 rounded-xl border border-white/[0.06] bg-black/20 p-3 text-[9px] font-bold text-zinc-300"><input id="settingsPermission-expenses" type="checkbox" style="accent-color:#C1FF72"> Expenses</label>
+              <label class="flex items-center gap-2 rounded-xl border border-white/[0.06] bg-black/20 p-3 text-[9px] font-bold text-zinc-300"><input id="settingsPermission-history" type="checkbox" style="accent-color:#C1FF72"> History</label>
+              <label class="col-span-2 flex items-center gap-2 rounded-xl border border-white/[0.06] bg-black/20 p-3 text-[9px] font-bold text-zinc-300"><input id="settingsPermission-reports" type="checkbox" style="accent-color:#C1FF72"> PDF &amp; Excel reports</label>
+            </div>
+          </div>
+          <label class="flex items-center justify-between rounded-xl border border-white/[0.06] bg-black/20 p-3"><span><strong class="block text-[9px] text-white">Active user</strong><small class="text-[7px] font-semibold text-zinc-600">Turn off to pause login access</small></span><input id="settingsUserActive" type="checkbox" checked style="accent-color:#C1FF72"></label>
+        </div>
+        <div class="mt-5 grid grid-cols-2 gap-2">
+          <button id="settingsDeleteUserButton" type="button" onclick="deleteBudgetIQWorkspaceUser()" class="hidden rounded-xl border border-red-500/20 bg-red-500/10 py-3 text-[8px] font-black uppercase tracking-wider text-red-400">Delete user</button>
+          <button type="submit" class="col-span-2 rounded-xl bg-[#C1FF72] py-3 text-[9px] font-black uppercase tracking-wider text-black">Save user access</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="sidebarBackdrop" class="absolute inset-0 bg-black/80 z-40 hidden opacity-0 transition-opacity duration-300"></div>
+  <aside id="sidebarMenu" class="absolute inset-y-0 left-0 w-80 bg-[#090A0E]/95 border-r border-white/[0.06] backdrop-blur-2xl z-50 transform -translate-x-full transition-transform duration-500 ease-out flex flex-col justify-between p-6 overflow-y-auto no-scrollbar" aria-label="Application menu">
+    <div class="space-y-5">
+      <div class="flex justify-between items-center pb-4 border-b border-white/[0.04]">
+        <div class="flex items-center gap-3"><div id="budgetIQSidebarAvatar" class="w-10 h-10 bg-[#C1FF72] text-black text-sm font-black rounded-full flex items-center justify-center">A</div><div><h4 id="budgetIQSidebarUser" class="text-xs font-extrabold text-white">Admin ⚡</h4><p class="text-[9px] text-gray-500 font-semibold">BudgetIQ Workspace</p></div></div>
+        <button id="closeSidebarBtn" aria-label="Close menu" class="w-8 h-8 rounded-full bg-white/[0.03] border border-white/[0.08] flex items-center justify-center text-gray-400"><span class="material-icons text-sm">close</span></button>
+      </div>
+      <div class="flex bg-white/[0.03] border border-white/[0.06] rounded-xl p-1"><span class="material-icons text-gray-500 text-sm px-2 flex items-center">search</span><input id="screenSearch" onkeyup="searchScreens()" type="text" placeholder="Search" class="bg-transparent w-full outline-none py-2 text-[10px] font-bold uppercase tracking-wider placeholder-gray-600 text-white"></div>
+      <div id="linksContainer" class="space-y-5 overflow-y-auto no-scrollbar pr-1 max-h-[440px]">
+        <div class="category-sec space-y-2"><h4 class="text-[8px] font-black uppercase tracking-widest text-[#C1FF72]">User Core App</h4><div class="space-y-1 text-xs"><a href="./dashboard.html" class="nav-link-item flex items-center py-2 px-3 text-gray-400 font-semibold"><span class="flex items-center gap-2"><span class="material-icons text-sm text-gray-500">home</span> Home Dashboard</span></a></div></div>
+        <div class="category-sec space-y-2"><h4 class="text-[8px] font-black uppercase tracking-widest text-purple-400">Profile &amp; History</h4><div class="space-y-1 text-xs">
+          <a href="./profile.html" class="nav-link-item flex items-center py-2 px-3 text-gray-400 font-semibold"><span class="flex items-center gap-2"><span class="material-icons text-sm text-gray-500">person</span> Profile</span></a>
+          <a href="./history.html" class="nav-link-item flex items-center py-2 px-3 text-gray-400 font-semibold"><span class="flex items-center gap-2"><span class="material-icons text-sm text-gray-500">history</span> History</span></a>
+          <a href="./notifications.html" class="nav-link-item flex items-center justify-between py-2 px-3 text-gray-400 font-semibold"><span class="flex items-center gap-2"><span class="material-icons text-sm text-gray-500">notifications</span> Notifications</span><span data-budgetiq-notification-badge class="hidden rounded-full bg-red-500 px-1.5 py-0.5 text-[7px] font-black text-white">0</span></a>
+        </div></div>
+        <div class="category-sec space-y-2" data-budgetiq-admin-only><h4 class="text-[8px] font-black uppercase tracking-widest text-amber-400">Administration</h4><div class="space-y-1 text-xs"><a href="./settings.html" class="nav-link-item flex items-center py-2 px-3 rounded-xl bg-white/[0.03] text-[#C1FF72] font-semibold"><span class="flex items-center gap-2"><span class="material-icons text-sm text-[#C1FF72]">settings</span> Settings</span></a></div></div>
+      </div>
+    </div>
+    <div class="pt-4 border-t border-white/[0.04] flex items-center justify-between text-[10px] text-gray-500 font-semibold uppercase tracking-wider"><span id="budgetIQSidebarFooterUser">Admin</span><span>v1.1.0 ⚡</span></div>
+  </aside>
+</body>
+
+</html>

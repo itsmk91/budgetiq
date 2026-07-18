@@ -543,6 +543,7 @@ function refreshExpenseBuyerDescription() {
 }
 
 function openExpenseEditor(entryId = null) {
+  if (!requireBudgetIQPermission('expenses', 'manage expenses')) return;
   const modal = document.getElementById('expenseEditorModal');
   const title = document.getElementById('expenseEditorTitle');
   const nameInput = document.getElementById('expenseNameInput');
@@ -587,6 +588,7 @@ function closeExpenseEditor() {
 
 function saveExpenseEntry(event) {
   event.preventDefault();
+  if (!requireBudgetIQPermission('expenses', 'manage expenses')) return;
   const nameInput = document.getElementById('expenseNameInput');
   const categoryInput = document.getElementById('expenseCategoryInput');
   const amountInput = document.getElementById('expenseAmountInput');
@@ -641,6 +643,7 @@ function saveExpenseEntry(event) {
 }
 
 function removeExpenseEntry(entryId) {
+  if (!requireBudgetIQPermission('expenses', 'remove expenses')) return;
   const entry = expenseEntries.find((item) => item.id === entryId);
   if (!entry || !window.confirm(`Remove ${entry.name}?`)) return;
   expenseEntries = expenseEntries.filter((item) => item.id !== entryId);
@@ -941,6 +944,7 @@ function createBudgetIQPdfViewer(reportWindow) {
 }
 
 function exportLegacyPurchaseReportPDF() {
+  if (!requireBudgetIQPermission('reports', 'export reports')) return;
   const rows = getPurchaseReportRows();
   const reportNote = rows.find((row) => String(row.note || '').trim())?.note?.trim() || '';
   const total = rows.reduce((sum, row) => sum + row.amount, 0);
@@ -1138,6 +1142,7 @@ function closeExpenseSavedModal(event) {
 }
 
 function triggerSaveExpense() {
+  if (!requireBudgetIQPermission('expenses', 'save expenses')) return;
   const total = expenseEntries.reduce((sum, entry) => sum + (Number(entry.amount) || 0), 0);
   if (total <= 0) {
     alert('Add at least one expense entry before saving.');
@@ -1796,6 +1801,7 @@ function applyBudgetIQMemberPaymentsForMonth() {
 }
 
 function openAddMemberModal() {
+  if (!requireBudgetIQPermission('members', 'add members')) return;
   if (!addMemberModal) return;
   if (addMemberNameInput) addMemberNameInput.value = '';
   addMemberModal.classList.remove('hidden');
@@ -1819,6 +1825,7 @@ function closeAddMemberModal(event) {
 }
 
 function saveNewMember() {
+  if (!requireBudgetIQPermission('members', 'add members')) return;
   if (!addMemberNameInput || !memberScrollList) return;
   const name = addMemberNameInput.value.trim();
   if (!name) {
@@ -1855,6 +1862,7 @@ function saveNewMember() {
 }
 
 function toggleMemberPaid(button) {
+  if (!requireBudgetIQPermission('payments', 'change payments')) return;
   const row = button ? button.closest('.member-list-row') : null;
   if (!row) return;
   const willBePaid = row.dataset.status !== 'paid';
@@ -1891,6 +1899,7 @@ function prepareMemberRename() {
 }
 
 function openEditMemberModal() {
+  if (!requireBudgetIQPermission('members', 'edit members')) return;
   if (!editMemberModal) return;
   if (!budgetIQMemberRows.length) {
     triggerToast('Add a member first', 'person_add', 'text-amber-400');
@@ -1919,6 +1928,7 @@ function closeEditMemberModal(event) {
 }
 
 function saveMemberRename() {
+  if (!requireBudgetIQPermission('members', 'edit members')) return;
   if (!editMemberSelect || !editMemberNameInput) return;
   const newName = editMemberNameInput.value.trim();
   if (!newName) {
@@ -1956,31 +1966,134 @@ const BUDGETIQ_FIXED_EXPENSES = 0;
 const BUDGETIQ_MONTHLY_EXPECTED_KEY = 'budgetiq-monthly-expected-amounts';
 const BUDGETIQ_MONTHLY_CONTRIBUTION_KEY = 'budgetiq-monthly-contribution-per-member';
 const BUDGETIQ_MONTHLY_CONTRIBUTION_GROUPS_KEY = 'budgetiq-monthly-contribution-groups';
-const BUDGETIQ_USER_LABELS = {
-  admin: 'Admin',
-  'user-1': 'User 1',
-  'user-2': 'User 2',
-  auditor: 'Financial Auditor'
+const BUDGETIQ_WORKSPACE_USERS_KEY = 'budgetiq-workspace-users';
+const BUDGETIQ_PERMISSION_KEYS = ['members', 'payments', 'expenses', 'history', 'reports'];
+const BUDGETIQ_ROLE_LABELS = {
+  admin: 'Administrator',
+  manager: 'Manager',
+  member: 'Team member',
+  viewer: 'Viewer'
 };
-const BUDGETIQ_USER_INITIALS = {
-  admin: 'A',
-  'user-1': 'U1',
-  'user-2': 'U2',
-  auditor: 'FA'
-};
-const BUDGETIQ_USER_PROFILE_SUBTITLES = {
-  admin: 'BudgetIQ Workspace • Full access',
-  'user-1': 'BudgetIQ Workspace • Member access',
-  'user-2': 'BudgetIQ Workspace • Member access',
-  auditor: 'BudgetIQ Workspace • Read-only access'
-};
-const BUDGETIQ_USER_FUND_ACCESS = {
-  admin: 'Admin access',
-  'user-1': 'Member access',
-  'user-2': 'Member access',
-  auditor: 'Read-only access'
+const BUDGETIQ_ROLE_PERMISSIONS = {
+  admin: { members: true, payments: true, expenses: true, history: true, reports: true },
+  manager: { members: true, payments: true, expenses: true, history: true, reports: true },
+  member: { members: true, payments: true, expenses: true, history: true, reports: false },
+  viewer: { members: false, payments: false, expenses: false, history: true, reports: true }
 };
 const BUDGETIQ_PROFILE_OVERRIDES_KEY = 'budgetiq-profile-overrides';
+
+function createBudgetIQAdminUser() {
+  return {
+    id: 'admin',
+    name: 'Admin',
+    role: 'admin',
+    active: true,
+    permissions: { ...BUDGETIQ_ROLE_PERMISSIONS.admin }
+  };
+}
+
+function normalizeBudgetIQWorkspaceUser(user) {
+  if (!user || typeof user !== 'object') return null;
+  const id = String(user.id || '').trim();
+  const name = String(user.name || '').trim();
+  if (!id || !name) return null;
+  const role = Object.prototype.hasOwnProperty.call(BUDGETIQ_ROLE_LABELS, user.role) ? user.role : 'member';
+  const preset = BUDGETIQ_ROLE_PERMISSIONS[role] || BUDGETIQ_ROLE_PERMISSIONS.member;
+  const permissions = {};
+  BUDGETIQ_PERMISSION_KEYS.forEach((permission) => {
+    permissions[permission] = role === 'admin' ? true : user.permissions?.[permission] === true;
+    if (!user.permissions || typeof user.permissions !== 'object') permissions[permission] = preset[permission] === true;
+  });
+  return {
+    id,
+    name,
+    role,
+    active: user.active !== false,
+    permissions
+  };
+}
+
+function readBudgetIQWorkspaceUsers() {
+  let users = [];
+  try {
+    const saved = JSON.parse(localStorage.getItem(BUDGETIQ_WORKSPACE_USERS_KEY) || '[]');
+    if (Array.isArray(saved)) users = saved.map(normalizeBudgetIQWorkspaceUser).filter(Boolean);
+  } catch (error) {
+    users = [];
+  }
+
+  const adminIndex = users.findIndex((user) => user.id === 'admin');
+  if (adminIndex < 0) users.unshift(createBudgetIQAdminUser());
+  else users[adminIndex] = { ...createBudgetIQAdminUser(), name: users[adminIndex].name || 'Admin' };
+  return users;
+}
+
+function saveBudgetIQWorkspaceUsers(users) {
+  const normalized = (Array.isArray(users) ? users : []).map(normalizeBudgetIQWorkspaceUser).filter(Boolean);
+  const adminIndex = normalized.findIndex((user) => user.id === 'admin');
+  if (adminIndex < 0) normalized.unshift(createBudgetIQAdminUser());
+  else normalized[adminIndex] = { ...createBudgetIQAdminUser(), name: normalized[adminIndex].name || 'Admin' };
+  localStorage.setItem(BUDGETIQ_WORKSPACE_USERS_KEY, JSON.stringify(normalized));
+  return normalized;
+}
+
+function getBudgetIQWorkspaceUser(userId) {
+  return readBudgetIQWorkspaceUsers().find((user) => user.id === String(userId || '')) || null;
+}
+
+function getBudgetIQSelectedWorkspaceUser() {
+  let selectedUserId = 'admin';
+  try {
+    selectedUserId = localStorage.getItem('budgetiq-selected-user') || selectedUserId;
+  } catch (error) {
+    return createBudgetIQAdminUser();
+  }
+  const user = getBudgetIQWorkspaceUser(selectedUserId);
+  if (user?.active) return user;
+  try { localStorage.setItem('budgetiq-selected-user', 'admin'); } catch (error) { /* Use Admin in memory. */ }
+  return getBudgetIQWorkspaceUser('admin') || createBudgetIQAdminUser();
+}
+
+function canBudgetIQ(permission) {
+  const user = getBudgetIQSelectedWorkspaceUser();
+  if (user.role === 'admin') return true;
+  return user.permissions?.[permission] === true;
+}
+
+function requireBudgetIQPermission(permission, label = 'use this feature') {
+  if (canBudgetIQ(permission)) return true;
+  triggerToast(`Admin permission is required to ${label}`, 'lock', 'text-amber-400');
+  return false;
+}
+
+function getBudgetIQPermissionForPath(pathname) {
+  const cleanPath = String(pathname || '').replace(/\/+$/, '');
+  if (/\/(plan)(\.html)?$/.test(cleanPath)) return 'members';
+  if (/\/(cart)(\.html)?$/.test(cleanPath)) return 'expenses';
+  if (/\/(history|notifications)(\.html)?$/.test(cleanPath)) return 'history';
+  return null;
+}
+
+function applyBudgetIQAccessControl(user = getBudgetIQSelectedWorkspaceUser()) {
+  const isAdmin = user.role === 'admin';
+  document.querySelectorAll('[data-budgetiq-admin-only]').forEach((element) => {
+    element.classList.toggle('hidden', !isAdmin);
+  });
+
+  document.querySelectorAll('a[href]').forEach((link) => {
+    let permission = null;
+    try { permission = getBudgetIQPermissionForPath(new URL(link.href, window.location.href).pathname); } catch (error) { /* Ignore invalid links. */ }
+    if (permission) link.classList.toggle('hidden', !canBudgetIQ(permission));
+  });
+
+  const currentPath = window.location.pathname;
+  const currentPermission = getBudgetIQPermissionForPath(currentPath);
+  const onSettingsPage = /\/settings(\.html)?$/.test(currentPath);
+  if ((currentPermission && !canBudgetIQ(currentPermission)) || (onSettingsPage && !isAdmin)) {
+    const dashboardLink = Array.from(document.querySelectorAll('a[href]')).find((link) => /dashboard(\.html)?$/.test(link.pathname));
+    window.location.replace(dashboardLink?.href || '/dashboard');
+  }
+}
 
 function formatBudgetIQAED(value) {
   const amount = Math.round(Number(value) || 0);
@@ -2104,6 +2217,7 @@ function readBudgetIQExpectedAmount(defaultAmount) {
 }
 
 function openExpectedAmountModal() {
+  if (!requireBudgetIQPermission('members', 'change the fund target')) return;
   const modal = document.getElementById('expectedAmountModal');
   const input = document.getElementById('expectedAmountInput');
   const monthLabel = document.getElementById('expectedAmountMonthLabel');
@@ -2132,6 +2246,7 @@ function closeExpectedAmountModal() {
 
 function saveExpectedAmount(event) {
   event.preventDefault();
+  if (!requireBudgetIQPermission('members', 'change the fund target')) return;
   const input = document.getElementById('expectedAmountInput');
   const errorLabel = document.getElementById('expectedAmountError');
   const amount = Math.round(Number(input?.value) || 0);
@@ -2332,6 +2447,7 @@ function updateMemberContributionPlanPreview() {
 }
 
 function openMemberContributionModal() {
+  if (!requireBudgetIQPermission('payments', 'change the payment plan')) return;
   const modal = document.getElementById('memberContributionModal');
   const input = document.getElementById('memberContributionInput');
   const monthLabel = document.getElementById('memberContributionMonthLabel');
@@ -2383,6 +2499,7 @@ function closeMemberContributionModal() {
 
 function saveMemberContributionAmount(event) {
   event.preventDefault();
+  if (!requireBudgetIQPermission('payments', 'change the payment plan')) return;
   const modal = document.getElementById('memberContributionModal');
   const input = document.getElementById('memberContributionInput');
   const errorLabel = document.getElementById('memberContributionError');
@@ -2498,10 +2615,10 @@ function refreshBudgetIQDashboard() {
 
 function applyBudgetIQSelectedUser() {
   const homeUserName = document.getElementById('homeUserName');
-  let selectedUser = 'admin';
+  const workspaceUser = getBudgetIQSelectedWorkspaceUser();
+  const selectedUser = workspaceUser.id;
   let profileOverrides = {};
   try {
-    selectedUser = localStorage.getItem('budgetiq-selected-user') || selectedUser;
     profileOverrides = JSON.parse(localStorage.getItem(BUDGETIQ_PROFILE_OVERRIDES_KEY) || '{}');
   } catch (error) {
     // Keep the Admin greeting when storage is unavailable.
@@ -2509,10 +2626,11 @@ function applyBudgetIQSelectedUser() {
   const savedProfile = profileOverrides && typeof profileOverrides === 'object'
     ? profileOverrides[selectedUser]
     : null;
-  const userLabel = savedProfile?.name || BUDGETIQ_USER_LABELS[selectedUser] || 'Admin';
-  const userSubtitle = savedProfile?.subtitle || BUDGETIQ_USER_PROFILE_SUBTITLES[selectedUser] || BUDGETIQ_USER_PROFILE_SUBTITLES.admin;
+  const userLabel = savedProfile?.name || workspaceUser.name || 'Admin';
+  const roleLabel = BUDGETIQ_ROLE_LABELS[workspaceUser.role] || BUDGETIQ_ROLE_LABELS.member;
+  const userSubtitle = savedProfile?.subtitle || `BudgetIQ Workspace • ${roleLabel} access`;
   const generatedInitials = userLabel.split(/\s+/).filter(Boolean).map((part) => part[0]).join('').slice(0, 2).toUpperCase();
-  const userInitial = savedProfile?.name ? (generatedInitials || 'A') : (BUDGETIQ_USER_INITIALS[selectedUser] || 'A');
+  const userInitial = generatedInitials || 'A';
   if (homeUserName) homeUserName.textContent = `${userLabel}!`;
 
   const sidebarAvatar = document.getElementById('budgetIQSidebarAvatar');
@@ -2549,9 +2667,11 @@ function applyBudgetIQSelectedUser() {
   }
   if (profileFundSummary) {
     const summary = readBudgetIQMemberSummary();
-    const access = BUDGETIQ_USER_FUND_ACCESS[selectedUser] || BUDGETIQ_USER_FUND_ACCESS.admin;
+    const access = workspaceUser.role === 'admin' ? 'Admin access' : `${roleLabel} access`;
     profileFundSummary.textContent = `${summary.total} members • ${access}`;
   }
+
+  applyBudgetIQAccessControl(workspaceUser);
 }
 
 refreshBudgetIQDashboard();
@@ -2560,7 +2680,7 @@ loadBudgetIQMembers();
 
 window.addEventListener('storage', (event) => {
   if ([MEMBER_IDS_KEY, MEMBER_PAYMENTS_KEY, MEMBER_MONTHLY_PAYMENTS_KEY, BUDGETIQ_EXPENSES_KEY, BUDGETIQ_MONTHLY_EXPECTED_KEY, BUDGETIQ_MONTHLY_CONTRIBUTION_KEY, BUDGETIQ_MONTHLY_CONTRIBUTION_GROUPS_KEY, 'budgetiq-selected-month'].includes(event.key)) refreshBudgetIQDashboard();
-  if (['budgetiq-selected-user', 'budgetiq-selected-month'].includes(event.key)) applyBudgetIQSelectedUser();
+  if (['budgetiq-selected-user', 'budgetiq-selected-month', BUDGETIQ_WORKSPACE_USERS_KEY].includes(event.key)) applyBudgetIQSelectedUser();
   if ([
     MEMBER_IDS_KEY,
     MEMBER_NAMES_KEY,
@@ -2664,7 +2784,7 @@ async function restoreBudgetIQBackup(event) {
     try {
       Object.keys(currentData).forEach((key) => localStorage.removeItem(key));
       importedEntries.forEach(([key, value]) => localStorage.setItem(key, value));
-      localStorage.setItem('budgetiq-storage-schema-version', '2');
+      localStorage.setItem('budgetiq-storage-schema-version', '3');
     } catch (storageError) {
       Object.keys(collectBudgetIQLocalStorage()).forEach((key) => localStorage.removeItem(key));
       Object.entries(currentData).forEach(([key, value]) => localStorage.setItem(key, value));
@@ -2722,14 +2842,8 @@ function getBudgetIQProfileSelectedMonth() {
 }
 
 function getBudgetIQProfileMemberScope() {
-  let selectedUser = 'admin';
-  try {
-    selectedUser = localStorage.getItem('budgetiq-selected-user') || selectedUser;
-  } catch (error) {
-    // Admin and Auditor can review the full shared-fund activity.
-  }
-  if (selectedUser === 'user-1') return '1';
-  if (selectedUser === 'user-2') return '2';
+  // Workspace permissions control history access. Activity is no longer tied
+  // to the removed demo User 1 / User 2 records.
   return null;
 }
 
@@ -2863,10 +2977,9 @@ function readBudgetIQProfileActivities() {
 
 function getBudgetIQCurrentActorName() {
   try {
-    const selectedUser = localStorage.getItem('budgetiq-selected-user') || 'admin';
+    const selectedUser = getBudgetIQSelectedWorkspaceUser();
     const savedOverrides = JSON.parse(localStorage.getItem(BUDGETIQ_PROFILE_OVERRIDES_KEY) || '{}');
-    const fallbackNames = { admin: 'Admin', 'user-1': 'User 1', 'user-2': 'User 2', auditor: 'Auditor' };
-    return savedOverrides?.[selectedUser]?.name || fallbackNames[selectedUser] || 'A fund user';
+    return savedOverrides?.[selectedUser.id]?.name || selectedUser.name || 'A fund user';
   } catch (error) {
     return 'A fund user';
   }
@@ -3169,6 +3282,7 @@ function downloadBudgetIQExcelBlob(blob, filename) {
 }
 
 async function exportBudgetIQMonthlyHistoryExcel() {
+  if (!requireBudgetIQPermission('reports', 'export reports')) return;
   if (!window.BudgetIQExcel?.createMonthlyHistoryWorkbook) {
     alert('The Excel exporter is still loading. Please try again.');
     return;
@@ -3231,6 +3345,7 @@ function refreshBudgetIQHistoryPdfCard() {
 
 
 function exportBudgetIQMonthlyHistoryPDF() {
+  if (!requireBudgetIQPermission('reports', 'export reports')) return;
   const selectedMonth = getBudgetIQProfileSelectedMonth();
   const memberScope = getBudgetIQProfileMemberScope();
   const activities = readBudgetIQProfileActivities();
@@ -3357,11 +3472,11 @@ function exportBudgetIQMonthlyHistoryPDF() {
 }
 
 function exportPurchaseReportPDF() {
-  exportBudgetIQMonthlyHistoryPDF();
+  if (requireBudgetIQPermission('reports', 'export reports')) exportBudgetIQMonthlyHistoryPDF();
 }
 
 function exportPurchaseReportExcel() {
-  exportBudgetIQMonthlyHistoryExcel();
+  if (requireBudgetIQPermission('reports', 'export reports')) exportBudgetIQMonthlyHistoryExcel();
 }
 
 function getBudgetIQActivityStatusClass(status) {
@@ -3471,6 +3586,12 @@ function saveProfileChanges() {
         : {};
       profileOverrides[selectedUser] = { name: newName, subtitle: newSubtitle };
       localStorage.setItem(BUDGETIQ_PROFILE_OVERRIDES_KEY, JSON.stringify(profileOverrides));
+      const users = readBudgetIQWorkspaceUsers();
+      const userIndex = users.findIndex((user) => user.id === selectedUser);
+      if (userIndex >= 0) {
+        users[userIndex] = { ...users[userIndex], name: newName };
+        saveBudgetIQWorkspaceUsers(users);
+      }
     } catch (error) {
       alert('The profile could not be saved on this device. Please try again.');
       return;
@@ -3565,7 +3686,7 @@ renderBudgetIQProfileActivity();
 
 // =======================================================
 
-// 16. SPLASH USER PICKER (4 FIXED LOCAL ROLES)
+// 16. SPLASH USER PICKER & ADMIN-MANAGED LOCAL USERS
 // =======================================================
 const SPLASH_PASSWORDS_KEY = 'budgetiq-user-passwords';
 let splashActiveUserValue = null;
@@ -3573,6 +3694,22 @@ let splashUnlockedUserValue = null;
 let splashPendingUserValue = null;
 let splashPendingNavigation = null;
 let splashPasswordIsSetup = false;
+
+function populateBudgetIQSplashUsers() {
+  const selector = document.getElementById('splashUserSelect');
+  if (!selector) return;
+  const previousValue = selector.value;
+  selector.innerHTML = '';
+  readBudgetIQWorkspaceUsers().filter((user) => user.active).forEach((user) => {
+    const option = document.createElement('option');
+    const initials = user.name.split(/\s+/).filter(Boolean).map((part) => part[0]).join('').slice(0, 2).toUpperCase() || 'U';
+    option.value = user.id;
+    option.dataset.initial = initials;
+    option.textContent = user.name;
+    selector.appendChild(option);
+  });
+  if (Array.from(selector.options).some((option) => option.value === previousValue)) selector.value = previousValue;
+}
 
 function getSplashUserOption(userValue) {
   const selector = document.getElementById('splashUserSelect');
@@ -3915,6 +4052,7 @@ function unlockSplashUserBeforeStart(event) {
 
 const splashUserSelect = document.getElementById('splashUserSelect');
 if (splashUserSelect) {
+  populateBudgetIQSplashUsers();
   try {
     const savedUser = localStorage.getItem('budgetiq-selected-user');
     if (savedUser && Array.from(splashUserSelect.options).some((option) => option.value === savedUser)) {
@@ -3928,6 +4066,236 @@ if (splashUserSelect) {
   applySplashUser(splashActiveUserValue);
 }
 
+// =======================================================
+// 17. ADMIN SETTINGS: USERS, PERMISSIONS & RECOVERY
+// =======================================================
+const BUDGETIQ_PERMISSION_LABELS = {
+  members: 'Members',
+  payments: 'Payments',
+  expenses: 'Expenses',
+  history: 'History',
+  reports: 'Reports'
+};
+
+function getBudgetIQSettingsPermissionInputs() {
+  return BUDGETIQ_PERMISSION_KEYS.reduce((inputs, permission) => {
+    inputs[permission] = document.getElementById(`settingsPermission-${permission}`);
+    return inputs;
+  }, {});
+}
+
+function applyBudgetIQSettingsRolePreset() {
+  const roleSelect = document.getElementById('settingsUserRole');
+  const role = roleSelect?.value || 'member';
+  const preset = BUDGETIQ_ROLE_PERMISSIONS[role] || BUDGETIQ_ROLE_PERMISSIONS.member;
+  const inputs = getBudgetIQSettingsPermissionInputs();
+  BUDGETIQ_PERMISSION_KEYS.forEach((permission) => {
+    if (inputs[permission]) inputs[permission].checked = preset[permission] === true;
+  });
+}
+
+function renderBudgetIQSettingsUsers() {
+  const list = document.getElementById('settingsUserList');
+  const count = document.getElementById('settingsUserCount');
+  if (!list) return;
+  const users = readBudgetIQWorkspaceUsers();
+  const passwordRecords = getSplashPasswordRecords();
+  if (count) count.textContent = String(users.filter((user) => user.active).length);
+
+  list.innerHTML = users.map((user) => {
+    const encodedId = encodeURIComponent(user.id);
+    const initials = user.name.split(/\s+/).filter(Boolean).map((part) => part[0]).join('').slice(0, 2).toUpperCase() || 'U';
+    const roleLabel = BUDGETIQ_ROLE_LABELS[user.role] || BUDGETIQ_ROLE_LABELS.member;
+    const permissions = BUDGETIQ_PERMISSION_KEYS.filter((permission) => user.permissions?.[permission]).map((permission) => BUDGETIQ_PERMISSION_LABELS[permission]);
+    const passwordReady = isValidSplashPasswordRecord(passwordRecords[user.id]);
+    const statusClass = user.active ? 'text-[#C1FF72]' : 'text-zinc-600';
+    return `
+      <article class="rounded-2xl border border-white/[0.07] bg-[#18181B]/70 p-4">
+        <div class="flex items-start justify-between gap-3">
+          <div class="flex min-w-0 items-center gap-3">
+            <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#C1FF72] text-[10px] font-black text-black">${escapeBudgetIQHtml(initials)}</span>
+            <div class="min-w-0">
+              <div class="flex items-center gap-2">
+                <h3 class="truncate text-xs font-extrabold text-white">${escapeBudgetIQHtml(user.name)}</h3>
+                ${user.id === 'admin' ? '<span class="rounded-full bg-[#C1FF72]/10 px-2 py-0.5 text-[7px] font-black uppercase text-[#C1FF72]">Owner</span>' : ''}
+              </div>
+              <p class="mt-0.5 text-[8px] font-bold uppercase tracking-wider ${statusClass}">${user.active ? roleLabel : 'Access paused'}</p>
+              <p class="mt-1 truncate text-[8px] font-semibold text-zinc-600">${permissions.length ? escapeBudgetIQHtml(permissions.join(' • ')) : 'No workspace permissions'}</p>
+            </div>
+          </div>
+          <div class="flex shrink-0 gap-1.5">
+            <button type="button" onclick="resetBudgetIQWorkspaceUserPassword(decodeURIComponent('${encodedId}'))" aria-label="Reset ${escapeBudgetIQHtml(user.name)} password" class="flex h-8 w-8 items-center justify-center rounded-xl border border-white/[0.07] bg-black/20 text-zinc-500 active:scale-95"><span class="material-icons text-sm">${passwordReady ? 'lock_reset' : 'lock_open'}</span></button>
+            ${user.id === 'admin' ? '' : `<button type="button" onclick="openBudgetIQWorkspaceUserEditor(decodeURIComponent('${encodedId}'))" aria-label="Edit ${escapeBudgetIQHtml(user.name)}" class="flex h-8 w-8 items-center justify-center rounded-xl border border-white/[0.07] bg-black/20 text-zinc-500 active:scale-95"><span class="material-icons text-sm">tune</span></button>`}
+          </div>
+        </div>
+        <div class="mt-3 flex items-center justify-between border-t border-white/[0.05] pt-3 text-[8px] font-bold">
+          <span class="text-zinc-600">Password</span>
+          <span class="${passwordReady ? 'text-emerald-400' : 'text-amber-400'}">${passwordReady ? 'Protected' : 'Create on first login'}</span>
+        </div>
+      </article>`;
+  }).join('');
+}
+
+function openBudgetIQWorkspaceUserEditor(userId = '') {
+  const modal = document.getElementById('settingsUserModal');
+  const title = document.getElementById('settingsUserModalTitle');
+  const idInput = document.getElementById('settingsUserId');
+  const nameInput = document.getElementById('settingsUserName');
+  const roleSelect = document.getElementById('settingsUserRole');
+  const activeInput = document.getElementById('settingsUserActive');
+  const deleteButton = document.getElementById('settingsDeleteUserButton');
+  if (!modal || !idInput || !nameInput || !roleSelect || !activeInput) return;
+
+  const user = userId ? getBudgetIQWorkspaceUser(userId) : null;
+  idInput.value = user?.id || '';
+  nameInput.value = user?.name || '';
+  roleSelect.value = user?.role && user.role !== 'admin' ? user.role : 'member';
+  activeInput.checked = user ? user.active : true;
+  if (title) title.textContent = user ? 'Edit user access' : 'Create workspace user';
+  if (deleteButton) deleteButton.classList.toggle('hidden', !user || user.id === 'admin');
+
+  const inputs = getBudgetIQSettingsPermissionInputs();
+  const permissions = user?.permissions || BUDGETIQ_ROLE_PERMISSIONS[roleSelect.value];
+  BUDGETIQ_PERMISSION_KEYS.forEach((permission) => {
+    if (inputs[permission]) inputs[permission].checked = permissions?.[permission] === true;
+  });
+
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
+  document.body.style.overflow = 'hidden';
+  setTimeout(() => nameInput.focus(), 80);
+}
+
+function closeBudgetIQWorkspaceUserEditor() {
+  const modal = document.getElementById('settingsUserModal');
+  if (modal) {
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+  }
+  document.body.style.overflow = '';
+}
+
+function saveBudgetIQWorkspaceUser(event) {
+  event.preventDefault();
+  const idInput = document.getElementById('settingsUserId');
+  const nameInput = document.getElementById('settingsUserName');
+  const roleSelect = document.getElementById('settingsUserRole');
+  const activeInput = document.getElementById('settingsUserActive');
+  const name = nameInput?.value.trim() || '';
+  if (!name) {
+    triggerToast('Enter the user name', 'person', 'text-amber-400');
+    nameInput?.focus();
+    return;
+  }
+
+  const users = readBudgetIQWorkspaceUsers();
+  const existingId = idInput?.value || '';
+  const existingIndex = users.findIndex((user) => user.id === existingId);
+  const role = roleSelect?.value || 'member';
+  const permissionInputs = getBudgetIQSettingsPermissionInputs();
+  const permissions = {};
+  BUDGETIQ_PERMISSION_KEYS.forEach((permission) => { permissions[permission] = permissionInputs[permission]?.checked === true; });
+  const user = {
+    id: existingIndex >= 0 ? users[existingIndex].id : `user-${Date.now().toString(36)}`,
+    name,
+    role,
+    active: activeInput?.checked !== false,
+    permissions
+  };
+
+  if (existingIndex >= 0) users[existingIndex] = user;
+  else users.push(user);
+  saveBudgetIQWorkspaceUsers(users);
+
+  try {
+    const overrides = JSON.parse(localStorage.getItem(BUDGETIQ_PROFILE_OVERRIDES_KEY) || '{}');
+    overrides[user.id] = {
+      ...(overrides[user.id] || {}),
+      name: user.name,
+      subtitle: `BudgetIQ Workspace • ${BUDGETIQ_ROLE_LABELS[user.role]} access`
+    };
+    localStorage.setItem(BUDGETIQ_PROFILE_OVERRIDES_KEY, JSON.stringify(overrides));
+  } catch (error) {
+    // User access is already saved even if the optional profile subtitle cannot be updated.
+  }
+
+  recordBudgetIQNotificationEvent({
+    type: 'system',
+    title: existingIndex >= 0 ? `${name}'s access was updated` : `${name} was added`,
+    message: `${BUDGETIQ_ROLE_LABELS[role]} permissions saved by Admin.`,
+    icon: existingIndex >= 0 ? 'admin_panel_settings' : 'person_add'
+  });
+  closeBudgetIQWorkspaceUserEditor();
+  renderBudgetIQSettingsUsers();
+  triggerToast(existingIndex >= 0 ? 'User permissions updated' : 'Workspace user created', 'check_circle', 'text-[#C1FF72]');
+}
+
+function deleteBudgetIQWorkspaceUser() {
+  const id = document.getElementById('settingsUserId')?.value || '';
+  const user = getBudgetIQWorkspaceUser(id);
+  if (!user || user.id === 'admin' || !window.confirm(`Remove ${user.name} from this workspace?`)) return;
+  saveBudgetIQWorkspaceUsers(readBudgetIQWorkspaceUsers().filter((item) => item.id !== user.id));
+
+  try {
+    const passwords = getSplashPasswordRecords();
+    delete passwords[user.id];
+    saveSplashPasswordRecords(passwords);
+    const overrides = JSON.parse(localStorage.getItem(BUDGETIQ_PROFILE_OVERRIDES_KEY) || '{}');
+    delete overrides[user.id];
+    localStorage.setItem(BUDGETIQ_PROFILE_OVERRIDES_KEY, JSON.stringify(overrides));
+    if (localStorage.getItem('budgetiq-selected-user') === user.id) localStorage.setItem('budgetiq-selected-user', 'admin');
+  } catch (error) {
+    // The user registry has already been updated.
+  }
+
+  recordBudgetIQNotificationEvent({ type: 'system', title: `${user.name} was removed`, message: 'Workspace access was removed by Admin.', icon: 'person_remove' });
+  closeBudgetIQWorkspaceUserEditor();
+  renderBudgetIQSettingsUsers();
+  triggerToast('User removed', 'person_remove', 'text-red-400');
+}
+
+function resetBudgetIQWorkspaceUserPassword(userId) {
+  const user = getBudgetIQWorkspaceUser(userId);
+  if (!user || !window.confirm(`Reset ${user.name}'s password? They will create a new one at the next login.`)) return;
+  try {
+    const records = getSplashPasswordRecords();
+    delete records[user.id];
+    saveSplashPasswordRecords(records);
+    renderBudgetIQSettingsUsers();
+    triggerToast(`${user.name}'s password was reset`, 'lock_reset', 'text-[#C1FF72]');
+  } catch (error) {
+    triggerToast('Password could not be reset', 'error', 'text-red-400');
+  }
+}
+
+function resetAllBudgetIQWorkspacePasswords() {
+  if (!window.confirm('Reset every user password, including Admin? Each user will create a new password at the next login.')) return;
+  try {
+    saveSplashPasswordRecords({});
+    renderBudgetIQSettingsUsers();
+    triggerToast('All user passwords were reset', 'lock_reset', 'text-[#C1FF72]');
+  } catch (error) {
+    triggerToast('Passwords could not be reset', 'error', 'text-red-400');
+  }
+}
+
+function initializeBudgetIQSettings() {
+  if (!document.getElementById('settingsUserList')) return;
+  const selectedUser = getBudgetIQSelectedWorkspaceUser();
+  if (selectedUser.role !== 'admin') {
+    applyBudgetIQAccessControl(selectedUser);
+    return;
+  }
+  renderBudgetIQSettingsUsers();
+  refreshBudgetIQBackupStatus();
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeBudgetIQSettings, { once: true });
+} else {
+  initializeBudgetIQSettings();
+}
+
 /* ------------------------------------------------------------------
  * PWA: register the service worker so the app is installable and
  * works offline ("Add to Home Screen" on iPhone/Android).
@@ -3935,7 +4303,7 @@ if (splashUserSelect) {
  * ------------------------------------------------------------------ */
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", function () {
-    navigator.serviceWorker.register("sw.js?v=64").catch(function (err) {
+    navigator.serviceWorker.register("sw.js?v=65").catch(function (err) {
       console.warn("[PWA] Service worker registration failed:", err);
     });
   });
@@ -3952,7 +4320,8 @@ const BUDGETIQ_CORE_PAGE_URLS = [
   'cart.html',
   'history.html',
   'notifications.html',
-  'profile.html'
+  'profile.html',
+  'settings.html'
 ];
 const budgetIQPagePreloads = new Map();
 
