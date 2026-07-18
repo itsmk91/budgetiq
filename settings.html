@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="css/tailwind.min.css?v=1">
   <link rel="preload" href="fonts/material-icons.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="css/style.css?v=4">
-  <script defer src="js/budgetiq-core.js?v=68"></script>
+  <script defer src="js/budgetiq-core.js?v=69"></script>
 </head>
 
 <body class="bg-[#0A0A0C] min-h-screen flex items-center justify-center relative">
@@ -52,8 +52,9 @@
             <p class="text-[9px] font-extrabold text-white">Workspace users</p>
             <div class="mt-0.5 flex items-center gap-1"><strong id="settingsUserCount" class="text-xs font-black text-[#C1FF72]">1</strong><span class="text-[7px] font-bold uppercase tracking-wider text-zinc-600">active access</span></div>
           </div>
-          <button type="button" onclick="openBudgetIQWorkspaceUserEditor()" aria-label="Add workspace user" class="flex h-8 shrink-0 items-center gap-1 rounded-lg border border-[#C1FF72]/20 bg-[#C1FF72] px-2.5 text-[7px] font-black uppercase tracking-wider text-black shadow-[0_8px_24px_rgba(193,255,114,0.1)] active:scale-95">
-            <span class="material-icons text-xs">add</span> Add
+          <button type="button" onclick="openBudgetIQWorkspaceUserEditor()" aria-label="Add workspace user" class="flex shrink-0 items-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.03] p-1.5 pr-2 text-left shadow-md transition-all hover:border-[#C1FF72]/30 active:scale-95">
+            <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#C1FF72] text-black"><span class="material-icons text-sm">person_add</span></span>
+            <span><span class="block text-[7px] font-bold uppercase tracking-wider text-zinc-600">Create</span><span class="block text-[9px] font-extrabold text-white">New user</span></span>
           </button>
         </div>
       </section>
